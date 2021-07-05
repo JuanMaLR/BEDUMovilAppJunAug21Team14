@@ -77,7 +77,7 @@ var orderStatus: String = ""
 fun validCredentials() {
 
     if (username == "" || password == "")
-        println("Neither the username nor password can be empty")
+        println("Neither the username nor password can be empty\nPlease try again\n")
     else {
         for ((index, oneUser) in registeredUsersList.withIndex()) {
             if (oneUser.username == username && oneUser.password == password){
@@ -304,7 +304,7 @@ fun main() {
                     } else {
                         do {
                             //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
-                            var secondOption: Byte?
+                            var secondOption: Byte? = 3
                             println("Please enter your username")
                             //Check if the value read is null or not. If it is, then assign ""
                             username = readLine()?:""
@@ -319,18 +319,18 @@ fun main() {
                                     println("Login successful! \nWelcome $username")
                                     break
                                 } else {
-                                    println("Username or password are incorrect!")
-                                    println("1.- Try again")
-                                    println("2.- Return to main menu")
-                                    secondOption = try {
-                                        //Check if the value read is null or not. If it is, then assign 3
-                                        readLine()?.toByte()?:3
-                                    } catch (e: NumberFormatException){
-                                        println("Option not valid, returning to main menu")
-                                        2
+                                    if (!(username == "" || password == "")) {
+                                        println("Username or password are incorrect!")
+                                        println("1.- Try again")
+                                        println("2.- Return to main menu")
+                                        secondOption = try {
+                                            //Check if the value read is null or not. If it is, then assign 2
+                                            readLine()?.toByte()
+                                        } catch (e: NumberFormatException){
+                                            println("Option not valid, returning to main menu")
+                                            2
+                                        }
                                     }
-                                    if (secondOption == 3.toByte())
-                                        println("Please enter a valid (not-null) option")
                                 }
                             } catch (e: ArrayIndexOutOfBoundsException) {
                                 println("Not such element exists in the system. Please try again")
@@ -397,7 +397,7 @@ fun main() {
             println("2.- Buy an item")
             println("3.- Logout")
             //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
-            var fourthOption: Byte? = try {
+            val fourthOption: Byte? = try {
                 //Check if the value read is null or not. If it is, then assign 3
                 readLine()?.toByte()?:4
             } catch (e: NumberFormatException){
