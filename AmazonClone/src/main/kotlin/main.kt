@@ -91,10 +91,10 @@ fun validCredentials() {
 
 //Function to validate the required fields of the registration form
 fun validRegistration(): Boolean {
-    var valid: Boolean = false
+    var valid = false
 
     fun notNullInput(): Boolean {
-        return if (registrationUsername.isNullOrBlank() || registrationEmail.isNullOrBlank() || registrationPassword.isNullOrBlank() || registrationPasswordConfirmation.isNullOrBlank()) {
+        return if (registrationUsername.isBlank() || registrationEmail.isBlank() || registrationPassword.isBlank() || registrationPasswordConfirmation.isBlank()) {
             println("Input data cannot be null. Please renter the information")
             false
         } else
@@ -184,6 +184,14 @@ fun validRegistration(): Boolean {
 //Function to check if a proper product was introduced
 fun validateProduct(): Boolean {
 
+    fun notNullInput(): Boolean {
+        return if (productName.isBlank() || productCategory.isBlank() || productStatus.isBlank() || productDescription.isBlank()) {
+            println("Input data cannot be null. Please renter the information")
+            false
+        } else
+            true
+    }
+
     fun validCategory(): Boolean {
         return if (validCategories.contains(productCategory.lowercase()))
             true
@@ -211,7 +219,7 @@ fun validateProduct(): Boolean {
             true
     }
 
-    return validCategory() && validStatus() && validDescription()
+    return validCategory() && validStatus() && validDescription() && notNullInput()
 }
 
 fun userLogged(): Boolean {
@@ -388,8 +396,10 @@ fun main() {
             println("1.- Register an item")
             println("2.- Buy an item")
             println("3.- Logout")
-            val fourthOption = try {
-                readLine()?.toByte()!!
+            //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+            var fourthOption: Byte? = try {
+                //Check if the value read is null or not. If it is, then assign 3
+                readLine()?.toByte()?:4
             } catch (e: NumberFormatException){
                 4
             }
@@ -398,23 +408,33 @@ fun main() {
                 1.toByte() -> {
                     do {
                         //Register path
-                        var secondOption: Byte
+                        //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+                        var secondOption: Byte?
                         println("Please enter the product name")
-                        productName = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productName = readLine()?:""
                         println("Please enter the product category")
                         println("Available categories: clothes, technology, home, food or health")
-                        productCategory = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productCategory = readLine()?:""
                         println("Please enter the product status")
                         println("Product status options: new, pre-owned or owned")
-                        productStatus = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productStatus = readLine()?:""
                         println("Please enter the product description")
-                        productDescription = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productDescription = readLine()?:""
                         println("Please enter the product price (in USD)")
                         var test: Boolean
                         do {
                             try {
-                                productPrice = readLine()?.toFloat()!!
-                                test = true
+                                //Check if the value read is null or not. If it is, then assign 0f
+                                productPrice = readLine()?.toFloat()?:0f
+                                test = if(productPrice == 0f){
+                                    println("Value invalid, please enter a valid price")
+                                    false
+                                } else
+                                    true
                             } catch (e: NumberFormatException){
                                 println("Value invalid, please enter a valid price")
                                 test = false
@@ -432,11 +452,14 @@ fun main() {
                             println("1.- Try again")
                             println("2.- Return to main menu")
                             secondOption = try {
-                                readLine()?.toByte()!!
+                                //Check if the value read is null or not. If it is, then assign 3
+                                readLine()?.toByte()?:3
                             } catch (e: NumberFormatException){
                                 println("Option not valid, returning to main menu")
                                 2
                             }
+                            if (secondOption == 3.toByte())
+                                println("Please enter a valid (not-null) option")
                         }
                     } while (secondOption != 2.toByte())
                 }
