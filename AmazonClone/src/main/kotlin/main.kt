@@ -21,6 +21,7 @@ import java.util.regex.Pattern
 //TODO: Define private variables in class for security
 //TODO: Define class as data class if necessary
 //TODO: Optimize isLogged property usage
+//TODO: Implement functions for general use business logic
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -51,7 +52,7 @@ var productAddedCorrectly: Boolean = false
 var registeredProductsList = arrayListOf<Product>()
 
 //4.- For buying a product
-var productCart = listOf<String>()
+var productCart = arrayListOf<Product>()
 var totalPrice = 0F
 //Credit card details
 var cardNumber: Long = 0
@@ -201,7 +202,7 @@ fun validateProduct(): Boolean {
 }
 
 fun userLogged(): Boolean {
-    var valid: Boolean = false
+    var valid = false
 
     //If a username exists loop and check for duplicate
     //If not, just return true
@@ -218,6 +219,33 @@ fun userLogged(): Boolean {
 fun logout() {
     registeredUsersList.elementAt(currentUser.toInt()).isLogged = false
     currentUser = 0
+}
+
+fun displayCurrentCart() {
+    if(productCart.isEmpty()){
+        println("No items have been added yet to the cart\n")
+    }
+    else {
+        println("Current items in cart: ")
+        println("    Product name - Category - Status - Description - Price")
+        productCart.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
+        println()
+    }
+}
+
+fun displayRegisteredItems(): Boolean {
+    return if(registeredProductsList.isEmpty()){
+        println("No items have been added, sorry for the inconveniences")
+        println("Please add an item first\n")
+        false
+    }
+    else {
+        displayCurrentCart()
+        println("Please select the item number you would like to buy: ")
+        println("    Product name - Category - Status - Description - Price")
+        registeredProductsList.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
+        true
+    }
 }
 
 //TODO: Validate for nulls
@@ -281,6 +309,13 @@ fun main() {
                         registrationUsername = readLine()!!
                         println("Please enter an email")
                         registrationEmail = readLine()!!
+                        println("Follow this guidelines to create a password:")
+                        println("At least one digit (0-9)")
+                        println("At least one lower case letter (a-z)")
+                        println("At least one upper case letter (A-Z)")
+                        println("At least one special character (@#\\$%^&+=)")
+                        println("No white spaces")
+                        println("At least 8 characters")
                         println("Please enter a password")
                         registrationPassword = readLine()!!
                         println("Please re-enter your password")
@@ -315,7 +350,7 @@ fun main() {
             println("1.- Register an item")
             println("2.- Buy an item")
             println("3.- Logout")
-            var fourthOption = try {
+            val fourthOption = try {
                 readLine()?.toByte()!!
             } catch (e: NumberFormatException){
                 4
@@ -330,14 +365,11 @@ fun main() {
                         productName = readLine()!!
                         println("Please enter the product category")
                         println("Available categories: clothes, technology, home, food or health")
-                        //Validate a valid category is entered
                         productCategory = readLine()!!
                         println("Please enter the product status")
-                        println("Product status options: new, pre-owned or used")
-                        //Validate a valid category is entered
+                        println("Product status options: new, pre-owned or owned")
                         productStatus = readLine()!!
                         println("Please enter the product description")
-                        //Extra validation: check for description length (i.e, 200 words)
                         productDescription = readLine()!!
                         println("Please enter the product price (in USD)")
                         var test: Boolean
@@ -371,7 +403,50 @@ fun main() {
                     } while (secondOption != 2.toByte())
                 }
                 2.toByte() -> {
-                    //TODO: Define logic for buying a product
+                    //Buy path
+                    //To know which item the user wants to buy
+                    var selectedItem: Byte = 0
+                    //To see if the user wants to continue buying or wants to checkout
+                    var tempDecision: Byte = 1
+                    //To loop while the user wants to continue adding items to his/her cart
+                    do {
+                        if(displayRegisteredItems()){
+                            try {
+                                selectedItem = readLine()?.toByte()!!
+                            } catch (e: NumberFormatException){
+                                println("Option not valid, returning to previous menu")
+                                break
+                            }
+                            //Check to see if the selected number matches an existing product
+                            if(selectedItem <= registeredProductsList.size) { //Exists
+                                productCart.add(registeredProductsList[selectedItem.toInt() - 1])
+                                println("Product added successfully to the cart\n")
+                            } else
+                                println("Unable to add the product\nPlease select a valid option")
+                            do {
+                                //Check to see if user wants to continue buying
+                                println("Please select what you want to do: ")
+                                println("1.- Continue buying")
+                                println("2.- Checkout")
+                                try {
+                                    tempDecision = readLine()?.toByte()!!
+                                    if (tempDecision != 1.toByte() && tempDecision != 2.toByte())
+                                        println("Option not valid, please select a valid option\n")
+                                } catch (e: NumberFormatException){
+                                    println("Option not valid, please select a valid option\n")
+                                }
+                            } while (tempDecision != 1.toByte() && tempDecision != 2.toByte())
+                            selectedItem = if(tempDecision == 2.toByte())
+                                0
+                            else
+                                1
+                        }
+                    } while (selectedItem != 0.toByte())
+                    //Checkout process
+                    if (tempDecision == 2.toByte()){
+                        println("Checkout process")
+                    }
+                    //TODO: Wipe all date from the arrays if the user returns one option?
                 }
                 3.toByte() -> {
                     logout()
