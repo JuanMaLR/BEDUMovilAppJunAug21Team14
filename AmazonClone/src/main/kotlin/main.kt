@@ -33,8 +33,9 @@ var registrationPasswordConfirmation: String = ""
 var registeredUsersList = arrayListOf<User>()
 
 //2.- For handling logging and session
-var username: String = ""
-var password: String = ""
+//Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+var username: String? = ""
+var password: String? = ""
 var currentUser: Byte = 0
 //var session: Boolean = false
 //var registeredUsers = mutableMapOf<String, String>()
@@ -75,10 +76,14 @@ var orderStatus: String = ""
 //Function to validate if user username and password are correct
 fun validCredentials() {
 
-    for ((index, oneUser) in registeredUsersList.withIndex()) {
-        if (oneUser.username == username && oneUser.password == password){
-            oneUser.isLogged = true
-            currentUser = index.toByte()
+    if (username == "" || password == "")
+        println("Neither the username nor password can be empty")
+    else {
+        for ((index, oneUser) in registeredUsersList.withIndex()) {
+            if (oneUser.username == username && oneUser.password == password){
+                oneUser.isLogged = true
+                currentUser = index.toByte()
+            }
         }
     }
 
@@ -252,7 +257,11 @@ fun displayRegisteredItems(): Boolean {
 //TODO: Optimize code
 //TODO: Validate input types (all read lines are strings now)
 fun main() {
-    var firstOption: Byte = 1
+    //For testing purposes
+    registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
+    registeredProductsList.add(Product("test product", "home", "new", "testing description length", 12f))
+    //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+    var firstOption: Byte? = 1
     //Do while to keep the user iterating over the menu options till he decides to leave
     do {
         //Check to see if user has logged in
@@ -264,7 +273,8 @@ fun main() {
             println("2.- Register")
             println("3.- Exit")
             firstOption = try {
-                readLine()?.toByte()!!
+                //Check if the value read is null or not. If it is, then assign 4
+                readLine()?.toByte()?:4.toByte()
             } catch (e: NumberFormatException){
                 4
             }
@@ -277,26 +287,38 @@ fun main() {
                         println("No users have been registered in the system. \nPlease register one first before attempting to login")
                     } else {
                         do {
-                            var secondOption: Byte
+                            //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+                            var secondOption: Byte?
                             println("Please enter your username")
-                            username = readLine()!!
+                            //Check if the value read is null or not. If it is, then assign ""
+                            username = readLine()?:""
                             println("Please enter your password")
-                            password = readLine()!!
+                            //Check if the value read is null or not. If it is, then assign ""
+                            password = readLine()?:""
                             //Validate user input: if everything is ok, set session variable to true
                             validCredentials()
-                            if (registeredUsersList.elementAt(currentUser.toInt()).isLogged){
-                                println("Login successful! \nWelcome $username")
-                                break
-                            } else {
-                                println("Username or password are incorrect!")
-                                println("1.- Try again")
-                                println("2.- Return to main menu")
-                                secondOption = try {
-                                    readLine()?.toByte()!!
-                                } catch (e: NumberFormatException){
-                                    println("Option not valid, returning to main menu")
-                                    2
+                            //Surround with try-catch to prevent the user from accessing an inexistent element in the registered user's array
+                            try {
+                                if (registeredUsersList.elementAt(currentUser.toInt()).isLogged){
+                                    println("Login successful! \nWelcome $username")
+                                    break
+                                } else {
+                                    println("Username or password are incorrect!")
+                                    println("1.- Try again")
+                                    println("2.- Return to main menu")
+                                    secondOption = try {
+                                        //Check if the value read is null or not. If it is, then assign 3
+                                        readLine()?.toByte()?:3
+                                    } catch (e: NumberFormatException){
+                                        println("Option not valid, returning to main menu")
+                                        2
+                                    }
+                                    if (secondOption == 3.toByte())
+                                        println("Please enter a valid (not-null) option")
                                 }
+                            } catch (e: ArrayIndexOutOfBoundsException) {
+                                println("Not such element exists in the system. Please try again")
+                                secondOption = 1
                             }
                         } while (secondOption != 2.toByte())
                     }
@@ -342,7 +364,7 @@ fun main() {
                     } while (thirdOption != 2.toByte())
                 }
                 3.toByte() -> firstOption = 3
-                else -> println("Please enter a valid option")
+                else -> println("Please enter a valid (not-null) option")
             }
         } else {
             //Display articles list
@@ -444,6 +466,7 @@ fun main() {
                     } while (selectedItem != 0.toByte())
                     //Checkout process
                     if (tempDecision == 2.toByte()){
+                        //TODO: Checkout process
                         println("Checkout process")
                     }
                     //TODO: Wipe all date from the arrays if the user returns one option?
