@@ -93,6 +93,14 @@ fun validCredentials() {
 fun validRegistration(): Boolean {
     var valid: Boolean = false
 
+    fun notNullInput(): Boolean {
+        return if (registrationUsername.isNullOrBlank() || registrationEmail.isNullOrBlank() || registrationPassword.isNullOrBlank() || registrationPasswordConfirmation.isNullOrBlank()) {
+            println("Input data cannot be null. Please renter the information")
+            false
+        } else
+            true
+    }
+
     fun validateUsername(username: String): Boolean {
         return if (username == registrationUsername) {
             println("Username already exists, please enter a different one")
@@ -170,7 +178,7 @@ fun validRegistration(): Boolean {
         }
     }
 
-    return valid
+    return valid && notNullInput()
 }
 
 //Function to check if a proper product was introduced
@@ -326,11 +334,14 @@ fun main() {
                 2.toByte() -> {
                     do {
                         //Register path
-                        var thirdOption: Byte
+                        //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+                        var thirdOption: Byte?
                         println("Please enter an username")
-                        registrationUsername = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationUsername = readLine()?:""
                         println("Please enter an email")
-                        registrationEmail = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationEmail = readLine()?:""
                         println("Follow this guidelines to create a password:")
                         println("At least one digit (0-9)")
                         println("At least one lower case letter (a-z)")
@@ -339,9 +350,11 @@ fun main() {
                         println("No white spaces")
                         println("At least 8 characters")
                         println("Please enter a password")
-                        registrationPassword = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationPassword = readLine()?:""
                         println("Please re-enter your password")
-                        registrationPasswordConfirmation = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationPasswordConfirmation = readLine()?:""
 
                         //If everything is ok, set session variable to true
                         if (validRegistration()){
@@ -355,11 +368,14 @@ fun main() {
                             println("1.- Try again")
                             println("2.- Return to main menu")
                             thirdOption = try {
-                                readLine()?.toByte()!!
+                                //Check if the value read is null or not. If it is, then assign 3
+                                readLine()?.toByte()?:3
                             } catch (e: NumberFormatException){
                                 println("Option not valid, returning to main menu")
                                 2
                             }
+                            if (thirdOption == 3.toByte())
+                                println("Please enter a valid (not-null) option")
                         }
                     } while (thirdOption != 2.toByte())
                 }
