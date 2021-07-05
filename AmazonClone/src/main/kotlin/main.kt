@@ -95,7 +95,7 @@ fun validRegistration(): Boolean {
 
     fun notNullInput(): Boolean {
         return if (registrationUsername.isBlank() || registrationEmail.isBlank() || registrationPassword.isBlank() || registrationPasswordConfirmation.isBlank()) {
-            println("Input data cannot be null. Please renter the information")
+            println("Input data cannot be null. Please renter the information\n")
             false
         } else
             true
@@ -178,7 +178,7 @@ fun validRegistration(): Boolean {
         }
     }
 
-    return valid && notNullInput()
+    return notNullInput() && valid
 }
 
 //Function to check if a proper product was introduced
@@ -324,7 +324,7 @@ fun main() {
                                         println("1.- Try again")
                                         println("2.- Return to main menu")
                                         secondOption = try {
-                                            //Check if the value read is null or not. If it is, then assign 2
+                                            //Check if the value read is null or not
                                             readLine()?.toByte()
                                         } catch (e: NumberFormatException){
                                             println("Option not valid, returning to main menu")
@@ -343,7 +343,7 @@ fun main() {
                     do {
                         //Register path
                         //Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
-                        var thirdOption: Byte?
+                        var thirdOption: Byte? = 3
                         println("Please enter an username")
                         //Check if the value read is null or not. If it is, then assign ""
                         registrationUsername = readLine()?:""
@@ -373,22 +373,22 @@ fun main() {
                             println("New user registered successfully! \nWelcome $registrationUsername")
                             break
                         } else {
-                            println("1.- Try again")
-                            println("2.- Return to main menu")
-                            thirdOption = try {
-                                //Check if the value read is null or not. If it is, then assign 3
-                                readLine()?.toByte()?:3
-                            } catch (e: NumberFormatException){
-                                println("Option not valid, returning to main menu")
-                                2
+                            if(!(registrationUsername == "" || registrationEmail == "" || registrationPassword == "" || registrationPasswordConfirmation == "")){
+                                println("1.- Try again")
+                                println("2.- Return to main menu")
+                                thirdOption = try {
+                                    //Check if the value read is null or not
+                                    readLine()?.toByte()
+                                } catch (e: NumberFormatException){
+                                    println("Option not valid, returning to main menu")
+                                    2
+                                }
                             }
-                            if (thirdOption == 3.toByte())
-                                println("Please enter a valid (not-null) option")
                         }
                     } while (thirdOption != 2.toByte())
                 }
                 3.toByte() -> firstOption = 3
-                else -> println("Please enter a valid (not-null) option")
+                else -> println("Please enter a valid and not-null option")
             }
         } else {
             //Display articles list
@@ -513,7 +513,7 @@ fun main() {
                 3.toByte() -> {
                     logout()
                 }
-                else -> println("Please enter a valid option")
+                else -> println("Please enter a valid and not-null option")
             }
         }
 
