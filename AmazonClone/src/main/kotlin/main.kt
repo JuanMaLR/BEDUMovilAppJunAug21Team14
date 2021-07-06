@@ -19,7 +19,8 @@ import java.util.regex.Pattern
 //If code fails to compile because Redeclaration error, use: ./gradlew clean
 
 //TODO: Optimize isLogged property usage
-//TODO: Implement functions for general use business logic
+//TODO: Implement functions for general use business logic (repetitive ones)
+//TODO: Optimize code
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -51,7 +52,7 @@ var productAddedCorrectly: Boolean = false
 var registeredProductsList = arrayListOf<Product>()
 
 //4.- For buying a product
-var productCart = arrayListOf<Product>() //TODO: Replace productCart with Cart class
+var productCart = mutableListOf<Product>()
 var totalPrice = 0F
 //Credit card details
 var cardNumber: Long = 0
@@ -267,9 +268,6 @@ fun displayRegisteredItems(): Boolean {
     }
 }
 
-//TODO: Validate for nulls
-//TODO: Optimize code
-//TODO: Validate input types (all read lines are strings now)
 fun main() {
     //For testing purposes
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
@@ -491,7 +489,7 @@ fun main() {
                         //TODO: Checkout process
                         println("Checkout process")
                     }
-                    //TODO: Wipe all date from the arrays if the user returns one option?
+                    //TODO: Delete products added to cart
                 }
                 3.toByte() -> {
                     logout()
