@@ -33,8 +33,9 @@ var registrationPasswordConfirmation: String = ""
 var registeredUsersList = arrayListOf<User>()
 
 //2.- For handling logging and session
-var username: String = ""
-var password: String = ""
+//Use ? to let Kotlin know that this value can be null (i.e. User typing enter without entering a value)
+var username: String? = ""
+var password: String? = ""
 var currentUser: Byte = 0
 //var session: Boolean = false
 //var registeredUsers = mutableMapOf<String, String>()
@@ -52,7 +53,7 @@ var productAddedCorrectly: Boolean = false
 var registeredProductsList = arrayListOf<Product>()
 
 //4.- For buying a product
-var productCart = arrayListOf<Product>()
+var productCart = arrayListOf<Product>() //TODO: Replace productCart with Cart class
 var totalPrice = 0F
 //Credit card details
 var cardNumber: Long = 0
@@ -75,10 +76,14 @@ var orderStatus: String = ""
 //Function to validate if user username and password are correct
 fun validCredentials() {
 
-    for ((index, oneUser) in registeredUsersList.withIndex()) {
-        if (oneUser.username == username && oneUser.password == password){
-            oneUser.isLogged = true
-            currentUser = index.toByte()
+    if (username == "" || password == "")
+        println("Neither the username nor password can be empty\nPlease try again\n")
+    else {
+        for ((index, oneUser) in registeredUsersList.withIndex()) {
+            if (oneUser.username == username && oneUser.password == password){
+                oneUser.isLogged = true
+                currentUser = index.toByte()
+            }
         }
     }
 
@@ -86,7 +91,15 @@ fun validCredentials() {
 
 //Function to validate the required fields of the registration form
 fun validRegistration(): Boolean {
-    var valid: Boolean = false
+    var valid = false
+
+    fun notNullInput(): Boolean {
+        return if (registrationUsername.isBlank() || registrationEmail.isBlank() || registrationPassword.isBlank() || registrationPasswordConfirmation.isBlank()) {
+            println("Input data cannot be null. Please renter the information\n")
+            false
+        } else
+            true
+    }
 
     fun validateUsername(username: String): Boolean {
         return if (username == registrationUsername) {
@@ -165,11 +178,19 @@ fun validRegistration(): Boolean {
         }
     }
 
-    return valid
+    return notNullInput() && valid
 }
 
 //Function to check if a proper product was introduced
 fun validateProduct(): Boolean {
+
+    fun notNullInput(): Boolean {
+        return if (productName.isBlank() || productCategory.isBlank() || productStatus.isBlank() || productDescription.isBlank()) {
+            println("Input data cannot be null. Please renter the information\n")
+            false
+        } else
+            true
+    }
 
     fun validCategory(): Boolean {
         return if (validCategories.contains(productCategory.lowercase()))
@@ -198,7 +219,7 @@ fun validateProduct(): Boolean {
             true
     }
 
-    return validCategory() && validStatus() && validDescription()
+    return notNullInput() && validCategory() && validStatus() && validDescription()
 }
 
 fun userLogged(): Boolean {
@@ -252,6 +273,9 @@ fun displayRegisteredItems(): Boolean {
 //TODO: Optimize code
 //TODO: Validate input types (all read lines are strings now)
 fun main() {
+    //For testing purposes
+    registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
+    registeredProductsList.add(Product("test product", "home", "new", "testing description length", 12f))
     var firstOption: Byte = 1
     //Do while to keep the user iterating over the menu options till he decides to leave
     do {
@@ -264,7 +288,7 @@ fun main() {
             println("2.- Register")
             println("3.- Exit")
             firstOption = try {
-                readLine()?.toByte()!!
+                readLine()!!.toByte()
             } catch (e: NumberFormatException){
                 4
             }
@@ -277,26 +301,36 @@ fun main() {
                         println("No users have been registered in the system. \nPlease register one first before attempting to login")
                     } else {
                         do {
-                            var secondOption: Byte
+                            var secondOption: Byte = 3
                             println("Please enter your username")
-                            username = readLine()!!
+                            //Check if the value read is null or not. If it is, then assign ""
+                            username = readLine()?:""
                             println("Please enter your password")
-                            password = readLine()!!
+                            //Check if the value read is null or not. If it is, then assign ""
+                            password = readLine()?:""
                             //Validate user input: if everything is ok, set session variable to true
                             validCredentials()
-                            if (registeredUsersList.elementAt(currentUser.toInt()).isLogged){
-                                println("Login successful! \nWelcome $username")
-                                break
-                            } else {
-                                println("Username or password are incorrect!")
-                                println("1.- Try again")
-                                println("2.- Return to main menu")
-                                secondOption = try {
-                                    readLine()?.toByte()!!
-                                } catch (e: NumberFormatException){
-                                    println("Option not valid, returning to main menu")
-                                    2
+                            //Surround with try-catch to prevent the user from accessing an inexistent element in the registered user's array
+                            try {
+                                if (registeredUsersList.elementAt(currentUser.toInt()).isLogged){
+                                    println("Login successful! \nWelcome $username")
+                                    break
+                                } else {
+                                    if (!(username == "" || password == "")) {
+                                        println("Username or password are incorrect!")
+                                        println("1.- Try again")
+                                        println("2.- Return to main menu")
+                                        secondOption = try {
+                                            readLine()!!.toByte()
+                                        } catch (e: NumberFormatException){
+                                            println("Option not valid, returning to main menu")
+                                            2
+                                        }
+                                    }
                                 }
+                            } catch (e: ArrayIndexOutOfBoundsException) {
+                                println("Not such element exists in the system. Please try again")
+                                secondOption = 1
                             }
                         } while (secondOption != 2.toByte())
                     }
@@ -304,11 +338,13 @@ fun main() {
                 2.toByte() -> {
                     do {
                         //Register path
-                        var thirdOption: Byte
+                        var thirdOption: Byte = 3
                         println("Please enter an username")
-                        registrationUsername = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationUsername = readLine()?:""
                         println("Please enter an email")
-                        registrationEmail = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationEmail = readLine()?:""
                         println("Follow this guidelines to create a password:")
                         println("At least one digit (0-9)")
                         println("At least one lower case letter (a-z)")
@@ -317,9 +353,11 @@ fun main() {
                         println("No white spaces")
                         println("At least 8 characters")
                         println("Please enter a password")
-                        registrationPassword = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationPassword = readLine()?:""
                         println("Please re-enter your password")
-                        registrationPasswordConfirmation = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        registrationPasswordConfirmation = readLine()?:""
 
                         //If everything is ok, set session variable to true
                         if (validRegistration()){
@@ -330,19 +368,21 @@ fun main() {
                             println("New user registered successfully! \nWelcome $registrationUsername")
                             break
                         } else {
-                            println("1.- Try again")
-                            println("2.- Return to main menu")
-                            thirdOption = try {
-                                readLine()?.toByte()!!
-                            } catch (e: NumberFormatException){
-                                println("Option not valid, returning to main menu")
-                                2
+                            if(!(registrationUsername == "" || registrationEmail == "" || registrationPassword == "" || registrationPasswordConfirmation == "")){
+                                println("1.- Try again")
+                                println("2.- Return to main menu")
+                                thirdOption = try {
+                                    readLine()!!.toByte()
+                                } catch (e: NumberFormatException){
+                                    println("Option not valid, returning to main menu")
+                                    2
+                                }
                             }
                         }
                     } while (thirdOption != 2.toByte())
                 }
                 3.toByte() -> firstOption = 3
-                else -> println("Please enter a valid option")
+                else -> println("Please enter a valid and not-null option")
             }
         } else {
             //Display articles list
@@ -350,8 +390,8 @@ fun main() {
             println("1.- Register an item")
             println("2.- Buy an item")
             println("3.- Logout")
-            val fourthOption = try {
-                readLine()?.toByte()!!
+            val fourthOption: Byte = try {
+                readLine()!!.toByte()
             } catch (e: NumberFormatException){
                 4
             }
@@ -360,22 +400,26 @@ fun main() {
                 1.toByte() -> {
                     do {
                         //Register path
-                        var secondOption: Byte
+                        var secondOption: Byte = 3
                         println("Please enter the product name")
-                        productName = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productName = readLine()?:""
                         println("Please enter the product category")
                         println("Available categories: clothes, technology, home, food or health")
-                        productCategory = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productCategory = readLine()?:""
                         println("Please enter the product status")
                         println("Product status options: new, pre-owned or owned")
-                        productStatus = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productStatus = readLine()?:""
                         println("Please enter the product description")
-                        productDescription = readLine()!!
+                        //Check if the value read is null or not. If it is, then assign ""
+                        productDescription = readLine()?:""
                         println("Please enter the product price (in USD)")
                         var test: Boolean
                         do {
                             try {
-                                productPrice = readLine()?.toFloat()!!
+                                productPrice = readLine()!!.toFloat()
                                 test = true
                             } catch (e: NumberFormatException){
                                 println("Value invalid, please enter a valid price")
@@ -391,13 +435,15 @@ fun main() {
                             println("New product registered successfully!")
                             break
                         } else {
-                            println("1.- Try again")
-                            println("2.- Return to main menu")
-                            secondOption = try {
-                                readLine()?.toByte()!!
-                            } catch (e: NumberFormatException){
-                                println("Option not valid, returning to main menu")
-                                2
+                            if(!(productName == "" || productCategory == "" || productStatus == "" || productDescription == "")) {
+                                println("1.- Try again")
+                                println("2.- Return to main menu")
+                                secondOption = try {
+                                    readLine()!!.toByte()
+                                } catch (e: NumberFormatException) {
+                                    println("Option not valid, returning to main menu")
+                                    2
+                                }
                             }
                         }
                     } while (secondOption != 2.toByte())
@@ -412,7 +458,7 @@ fun main() {
                     do {
                         if(displayRegisteredItems()){
                             try {
-                                selectedItem = readLine()?.toByte()!!
+                                selectedItem = readLine()!!.toByte()
                             } catch (e: NumberFormatException){
                                 println("Option not valid, returning to previous menu")
                                 break
@@ -429,7 +475,7 @@ fun main() {
                                 println("1.- Continue buying")
                                 println("2.- Checkout")
                                 try {
-                                    tempDecision = readLine()?.toByte()!!
+                                    tempDecision = readLine()!!.toByte()
                                     if (tempDecision != 1.toByte() && tempDecision != 2.toByte())
                                         println("Option not valid, please select a valid option\n")
                                 } catch (e: NumberFormatException){
@@ -444,6 +490,7 @@ fun main() {
                     } while (selectedItem != 0.toByte())
                     //Checkout process
                     if (tempDecision == 2.toByte()){
+                        //TODO: Checkout process
                         println("Checkout process")
                     }
                     //TODO: Wipe all date from the arrays if the user returns one option?
@@ -451,7 +498,7 @@ fun main() {
                 3.toByte() -> {
                     logout()
                 }
-                else -> println("Please enter a valid option")
+                else -> println("Please enter a valid and not-null option")
             }
         }
 
