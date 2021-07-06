@@ -19,7 +19,6 @@ import java.util.regex.Pattern
 //If code fails to compile because Redeclaration error, use: ./gradlew clean
 
 //TODO: Define private variables in class for security
-//TODO: Define class as data class if necessary
 //TODO: Optimize isLogged property usage
 //TODO: Implement functions for general use business logic
 
