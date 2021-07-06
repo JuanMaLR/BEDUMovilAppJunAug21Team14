@@ -18,7 +18,6 @@ import java.util.regex.Pattern
 
 //If code fails to compile because Redeclaration error, use: ./gradlew clean
 
-//TODO: Define private variables in class for security
 //TODO: Optimize isLogged property usage
 //TODO: Implement functions for general use business logic
 
@@ -79,8 +78,8 @@ fun validCredentials() {
         println("Neither the username nor password can be empty\nPlease try again\n")
     else {
         for ((index, oneUser) in registeredUsersList.withIndex()) {
-            if (oneUser.username == username && oneUser.password == password){
-                oneUser.isLogged = true
+            if (oneUser.getUsername() == username && oneUser.getPassword() == password){
+                oneUser.setIsLogged(true)
                 currentUser = index.toByte()
             }
         }
@@ -171,7 +170,7 @@ fun validRegistration(): Boolean {
         valid = isEmailValid(registrationEmail) && validatePasswords() && isPasswordSafe(registrationPassword)
     else {
         for (oneUser in registeredUsersList) {
-            if(validateUsername(oneUser.username) && validateEmail(oneUser.email) && isEmailValid(registrationEmail) && validatePasswords() && isPasswordSafe(registrationPassword)){
+            if(validateUsername(oneUser.getUsername()) && validateEmail(oneUser.email) && isEmailValid(registrationEmail) && validatePasswords() && isPasswordSafe(registrationPassword)){
                 valid = true
             }
         }
@@ -228,7 +227,7 @@ fun userLogged(): Boolean {
     //If not, just return true
     if (registeredUsersList.isNotEmpty()){
         for (oneUser in registeredUsersList){
-            if(oneUser.isLogged)
+            if(oneUser.isLogged())
                 valid = true
         }
     }
@@ -237,7 +236,7 @@ fun userLogged(): Boolean {
 }
 
 fun logout() {
-    registeredUsersList.elementAt(currentUser.toInt()).isLogged = false
+    registeredUsersList.elementAt(currentUser.toInt()).setIsLogged(false)
     currentUser = 0
 }
 
@@ -311,7 +310,7 @@ fun main() {
                             validCredentials()
                             //Surround with try-catch to prevent the user from accessing an inexistent element in the registered user's array
                             try {
-                                if (registeredUsersList.elementAt(currentUser.toInt()).isLogged){
+                                if (registeredUsersList.elementAt(currentUser.toInt()).isLogged()){
                                     println("Login successful! \nWelcome $username")
                                     break
                                 } else {
