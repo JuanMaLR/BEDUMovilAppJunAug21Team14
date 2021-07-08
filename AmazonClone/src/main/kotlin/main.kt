@@ -1,3 +1,4 @@
+import models.Cart
 import models.Product
 import models.User
 import java.lang.NumberFormatException
@@ -21,6 +22,7 @@ import java.util.regex.Pattern
 //TODO: Optimize isLogged property usage
 //TODO: Implement functions for general use business logic (repetitive ones)
 //TODO: Optimize code
+//TODO: Check postworks and challenges to see what else to add our code
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -241,15 +243,17 @@ fun logout() {
     currentUser = 0
 }
 
-fun displayCurrentCart() {
-    if(productCart.isEmpty()){
+fun displayCurrentCart(): Boolean {
+    return if(productCart.isEmpty()){
         println("No items have been added yet to the cart\n")
+        false
     }
     else {
         println("Current items in cart: ")
         println("    Product name - Category - Status - Description - Price")
         productCart.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
         println()
+        true
     }
 }
 
@@ -258,8 +262,7 @@ fun displayRegisteredItems(): Boolean {
         println("No items have been added, sorry for the inconveniences")
         println("Please add an item first\n")
         false
-    }
-    else {
+    } else {
         displayCurrentCart()
         println("Please select the item number you would like to buy: ")
         println("    Product name - Category - Status - Description - Price")
@@ -267,6 +270,36 @@ fun displayRegisteredItems(): Boolean {
         true
     }
 }
+
+fun deleteItemsFromCart(deleteOption: Byte) {
+    if(deleteOption == 0.toByte())
+        println("Nothing was deleted")
+    else {
+        try {
+            productCart.removeAt(deleteOption.toInt() - 1)
+            println("Element $deleteOption deleted successfully")
+            displayCurrentCart()
+        } catch (e: IndexOutOfBoundsException) {
+            println("Specified element doesn't exist. Unable to remove it\n")
+        }
+    }
+}
+
+//Function to check if a proper product was introduced
+fun validateUserInformation(): Boolean {
+
+    fun notNullInput(): Boolean {
+        return if (firstName.isBlank() || lastName.isBlank() || addressLine.isBlank() || city.isBlank() || state.isBlank() || country.isBlank()) {
+            println("Input data cannot be null. Please renter the information\n")
+            false
+        } else
+            true
+    }
+
+    return notNullInput()
+}
+
+//TODO: Protect strings if user enters a number instead
 
 fun main() {
     //For testing purposes
@@ -384,12 +417,13 @@ fun main() {
             //Display articles list
             println("\nWhat would you like to do?")
             println("1.- Register an item")
-            println("2.- Buy an item")
-            println("3.- Logout")
+            println("2.- Add/Remove items from the cart")
+            println("3.- Checkout process")
+            println("4.- Logout")
             val fourthOption: Byte = try {
                 readLine()!!.toByte()
             } catch (e: NumberFormatException){
-                4
+                5
             }
 
             when(fourthOption) {
@@ -445,53 +479,132 @@ fun main() {
                     } while (secondOption != 2.toByte())
                 }
                 2.toByte() -> {
-                    //Buy path
+                    //Adding items to the cart path
                     //To know which item the user wants to buy
                     var selectedItem: Byte = 0
-                    //To see if the user wants to continue buying or wants to checkout
-                    var tempDecision: Byte = 1
+                    //To see what the user wants to do
+                    var selectedOption: Byte = 1
                     //To loop while the user wants to continue adding items to his/her cart
                     do {
-                        if(displayRegisteredItems()){
-                            try {
-                                selectedItem = readLine()!!.toByte()
-                            } catch (e: NumberFormatException){
-                                println("Option not valid, returning to previous menu")
-                                break
-                            }
-                            //Check to see if the selected number matches an existing product
-                            if(selectedItem <= registeredProductsList.size) { //Exists
-                                productCart.add(registeredProductsList[selectedItem.toInt() - 1])
-                                println("Product added successfully to the cart\n")
-                            } else
-                                println("Unable to add the product\nPlease select a valid option")
-                            do {
-                                //Check to see if user wants to continue buying
-                                println("Please select what you want to do: ")
-                                println("1.- Continue buying")
-                                println("2.- Checkout")
-                                try {
-                                    tempDecision = readLine()!!.toByte()
-                                    if (tempDecision != 1.toByte() && tempDecision != 2.toByte())
-                                        println("Option not valid, please select a valid option\n")
-                                } catch (e: NumberFormatException){
-                                    println("Option not valid, please select a valid option\n")
-                                }
-                            } while (tempDecision != 1.toByte() && tempDecision != 2.toByte())
-                            selectedItem = if(tempDecision == 2.toByte())
-                                0
-                            else
-                                1
+                        //Display menu options
+                        println("Please select what you want to do: ")
+                        println("1.- Buy an item")
+                        println("2.- Delete an item from the cart")
+                        println("3.- Return to previous menu")
+                        selectedOption = try {
+                            readLine()!!.toByte()
+                        } catch (e: NumberFormatException){
+                            println("Option not valid, please select a valid option\n")
+                            4
                         }
-                    } while (selectedItem != 0.toByte())
-                    //Checkout process
-                    if (tempDecision == 2.toByte()){
-                        //TODO: Checkout process
-                        println("Checkout process")
-                    }
-                    //TODO: Delete products added to cart
+                        //Do something depending on user selection
+                        when(selectedOption) {
+                            1.toByte() -> {
+                                if(displayRegisteredItems()){
+                                    try {
+                                        selectedItem = readLine()!!.toByte()
+                                    } catch (e: NumberFormatException){
+                                        println("Option not valid, returning to previous menu")
+                                        break
+                                    }
+                                    //Check to see if the selected number matches an existing product
+                                    if(selectedItem <= registeredProductsList.size) { //Exists
+                                        productCart.add(registeredProductsList[selectedItem.toInt() - 1])
+                                        println("Product added successfully to the cart\n")
+                                    } else
+                                        println("Unable to add the product\nPlease select a valid option")
+                                }
+                            }
+                            2.toByte() -> {
+                                if(displayCurrentCart()) {
+                                    var deleteOption: Byte
+                                    println("Please introduce the element number you wish to delete")
+                                    try {
+                                        deleteOption = readLine()!!.toByte()
+                                        deleteItemsFromCart(deleteOption)
+                                    } catch (e: NumberFormatException) {
+                                        println("Option not valid, returning to previous menu\n")
+                                    }
+                                }
+                            }
+                            3.toByte() -> { break }
+                            else -> println("Option not valid, please select a valid option\n")
+                        }
+                    } while (selectedItem != 3.toByte())
                 }
                 3.toByte() -> {
+                    //Checkout path
+                    if(productCart.isEmpty()){
+                        println("No products have been added to the cart yet. Please add a product first before proceeding to checkout.")
+                    } else {
+                        var secondOption: Byte
+                        //Prompt the user for additional information to be able to ship the order
+                        do {
+                            println("Please introduce your first name")
+                            firstName = readLine()?:""
+                            println("Please introduce your last name")
+                            lastName = readLine()?:""
+                            println("Please introduce your address")
+                            addressLine = readLine()?:""
+                            println("Please introduce your city")
+                            city = readLine()?:""
+                            println("Please introduce your state")
+                            state = readLine()?:""
+                            println("Please introduce your zip code")
+                            var test: Boolean
+                            do {
+                                try {
+                                    zipCode = readLine()!!.toShort()
+                                    test = true
+                                } catch (e: NumberFormatException){
+                                    println("Value invalid, please enter a valid zipCode")
+                                    test = false
+                                }
+                            } while (!test)
+                            println("Please introduce your country")
+                            country = readLine()?:""
+                            println("Please introduce your phone number")
+                            var test2: Boolean
+                            do {
+                                try {
+                                    phoneNumber = readLine()!!.toInt()
+                                    test2 = true
+                                } catch (e: NumberFormatException){
+                                    println("Value invalid, please enter a valid zipCode")
+                                    test2 = false
+                                }
+                            } while (!test2)
+
+                            //If everything is ok, move on
+                            if (validateUserInformation()){
+                                //Add user information
+                                registeredUsersList[currentUser.toInt()].firstName = firstName
+                                registeredUsersList[currentUser.toInt()].lastName = lastName
+                                registeredUsersList[currentUser.toInt()].addressLine = addressLine
+                                registeredUsersList[currentUser.toInt()].city = city
+                                registeredUsersList[currentUser.toInt()].state = state
+                                registeredUsersList[currentUser.toInt()].zipCode = zipCode
+                                registeredUsersList[currentUser.toInt()].country = country
+                                registeredUsersList[currentUser.toInt()].phoneNumber = phoneNumber
+                                println("User profile completed successfully!")
+                                break
+                            } else {
+                                println("1.- Try again")
+                                println("2.- Return to main menu")
+                                secondOption = try {
+                                    readLine()!!.toByte()
+                                } catch (e: NumberFormatException) {
+                                    println("Option not valid, returning to main menu")
+                                    2
+                                }
+                            }
+                        } while (secondOption != 2.toByte())
+
+                        //TODO: Prompt the user the total of the order and guide him into making the payment
+                    }
+                }
+                4.toByte() -> {
+                    //Logout path
                     logout()
                 }
                 else -> println("Please enter a valid and not-null option")
