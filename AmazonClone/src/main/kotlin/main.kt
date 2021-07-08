@@ -1,3 +1,4 @@
+import models.Cart
 import models.Product
 import models.User
 import java.lang.NumberFormatException
@@ -284,6 +285,22 @@ fun deleteItemsFromCart(deleteOption: Byte) {
     }
 }
 
+//Function to check if a proper product was introduced
+fun validateUserInformation(): Boolean {
+
+    fun notNullInput(): Boolean {
+        return if (firstName.isBlank() || lastName.isBlank() || addressLine.isBlank() || city.isBlank() || state.isBlank() || country.isBlank()) {
+            println("Input data cannot be null. Please renter the information\n")
+            false
+        } else
+            true
+    }
+
+    return notNullInput()
+}
+
+//TODO: Protect strings if user enters a number instead
+
 fun main() {
     //For testing purposes
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
@@ -520,7 +537,70 @@ fun main() {
                     if(productCart.isEmpty()){
                         println("No products have been added to the cart yet. Please add a product first before proceeding to checkout.")
                     } else {
+                        var secondOption: Byte
+                        //Prompt the user for additional information to be able to ship the order
+                        do {
+                            println("Please introduce your first name")
+                            firstName = readLine()?:""
+                            println("Please introduce your last name")
+                            lastName = readLine()?:""
+                            println("Please introduce your address")
+                            addressLine = readLine()?:""
+                            println("Please introduce your city")
+                            city = readLine()?:""
+                            println("Please introduce your state")
+                            state = readLine()?:""
+                            println("Please introduce your zip code")
+                            var test: Boolean
+                            do {
+                                try {
+                                    zipCode = readLine()!!.toShort()
+                                    test = true
+                                } catch (e: NumberFormatException){
+                                    println("Value invalid, please enter a valid zipCode")
+                                    test = false
+                                }
+                            } while (!test)
+                            println("Please introduce your country")
+                            country = readLine()?:""
+                            println("Please introduce your phone number")
+                            var test2: Boolean
+                            do {
+                                try {
+                                    phoneNumber = readLine()!!.toInt()
+                                    test2 = true
+                                } catch (e: NumberFormatException){
+                                    println("Value invalid, please enter a valid zipCode")
+                                    test2 = false
+                                }
+                            } while (!test2)
 
+                            //If everything is ok, move on
+                            if (validateUserInformation()){
+                                //Add user information
+                                registeredUsersList[currentUser.toInt()].firstName = firstName
+                                registeredUsersList[currentUser.toInt()].lastName = lastName
+                                registeredUsersList[currentUser.toInt()].addressLine = addressLine
+                                registeredUsersList[currentUser.toInt()].city = city
+                                registeredUsersList[currentUser.toInt()].state = state
+                                registeredUsersList[currentUser.toInt()].zipCode = zipCode
+                                registeredUsersList[currentUser.toInt()].country = country
+                                registeredUsersList[currentUser.toInt()].phoneNumber = phoneNumber
+                                println("User profile completed successfully!")
+                                break
+                            } else {
+                                println("1.- Try again")
+                                println("2.- Return to main menu")
+                                secondOption = try {
+                                    readLine()!!.toByte()
+                                } catch (e: NumberFormatException) {
+                                    println("Option not valid, returning to main menu")
+                                    2
+                                }
+                            }
+                        } while (secondOption != 2.toByte())
+
+                        //TODO: Prompt the user the total of the order and guide him into making the payment
                     }
                 }
                 4.toByte() -> {
