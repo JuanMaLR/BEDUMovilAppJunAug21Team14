@@ -242,15 +242,17 @@ fun logout() {
     currentUser = 0
 }
 
-fun displayCurrentCart() {
-    if(productCart.isEmpty()){
+fun displayCurrentCart(): Boolean {
+    return if(productCart.isEmpty()){
         println("No items have been added yet to the cart\n")
+        false
     }
     else {
         println("Current items in cart: ")
         println("    Product name - Category - Status - Description - Price")
         productCart.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
         println()
+        true
     }
 }
 
@@ -259,8 +261,7 @@ fun displayRegisteredItems(): Boolean {
         println("No items have been added, sorry for the inconveniences")
         println("Please add an item first\n")
         false
-    }
-    else {
+    } else {
         displayCurrentCart()
         println("Please select the item number you would like to buy: ")
         println("    Product name - Category - Status - Description - Price")
@@ -274,11 +275,11 @@ fun deleteItemsFromCart(deleteOption: Byte) {
         println("Nothing was deleted")
     else {
         try {
-            productCart.removeAt(deleteOption.toInt())
+            productCart.removeAt(deleteOption.toInt() - 1)
             println("Element $deleteOption deleted successfully")
             displayCurrentCart()
         } catch (e: IndexOutOfBoundsException) {
-            println("Specified element doesn't exist. Unable to remove it")
+            println("Specified element doesn't exist. Unable to remove it\n")
         }
     }
 }
@@ -464,54 +465,55 @@ fun main() {
                     //Adding items to the cart path
                     //To know which item the user wants to buy
                     var selectedItem: Byte = 0
-                    //To see if the user wants to continue buying or wants to checkout
-                    var tempDecision: Byte = 1
+                    //To see what the user wants to do
+                    var selectedOption: Byte = 1
                     //To loop while the user wants to continue adding items to his/her cart
                     do {
-                        if(displayRegisteredItems()){
-                            try {
-                                selectedItem = readLine()!!.toByte()
-                            } catch (e: NumberFormatException){
-                                println("Option not valid, returning to previous menu")
-                                break
-                            }
-                            //Check to see if the selected number matches an existing product
-                            if(selectedItem <= registeredProductsList.size) { //Exists
-                                productCart.add(registeredProductsList[selectedItem.toInt() - 1])
-                                println("Product added successfully to the cart\n")
-                            } else
-                                println("Unable to add the product\nPlease select a valid option")
-                            do {
-                                //Check to see if user wants to continue buying
-                                println("Please select what you want to do: ")
-                                println("1.- Continue buying")
-                                println("2.- Delete item from cart")
-                                println("3.- Return to previous menu")
-                                try {
-                                    tempDecision = readLine()!!.toByte()
-                                    if (tempDecision != 1.toByte() && tempDecision != 2.toByte() && tempDecision != 3.toByte())
-                                        println("Option not valid, please select a valid option\n")
-                                } catch (e: NumberFormatException){
-                                    println("Option not valid, please select a valid option\n")
-                                }
-                            } while (tempDecision != 1.toByte() && tempDecision != 2.toByte() && tempDecision != 3.toByte())
-                            if (tempDecision == 2.toByte()){
-                                displayCurrentCart()
-                                var deleteOption: Byte = 0
-                                println("Please introduce the element number you wish to delete")
-                                try {
-                                    deleteOption = readLine()!!.toByte()
-                                } catch (e: NumberFormatException) {
-                                    println("Option not valid, returning to previous menu\n")
-                                }
-                                deleteItemsFromCart(deleteOption)
-                            }
-                            selectedItem = if(tempDecision == 2.toByte() || tempDecision == 3.toByte())
-                                0
-                            else
-                                1
+                        //Display menu options
+                        println("Please select what you want to do: ")
+                        println("1.- Buy an item")
+                        println("2.- Delete an item from the cart")
+                        println("3.- Return to previous menu")
+                        selectedOption = try {
+                            readLine()!!.toByte()
+                        } catch (e: NumberFormatException){
+                            println("Option not valid, please select a valid option\n")
+                            4
                         }
-                    } while (selectedItem != 0.toByte())
+                        //Do something depending on user selection
+                        when(selectedOption) {
+                            1.toByte() -> {
+                                if(displayRegisteredItems()){
+                                    try {
+                                        selectedItem = readLine()!!.toByte()
+                                    } catch (e: NumberFormatException){
+                                        println("Option not valid, returning to previous menu")
+                                        break
+                                    }
+                                    //Check to see if the selected number matches an existing product
+                                    if(selectedItem <= registeredProductsList.size) { //Exists
+                                        productCart.add(registeredProductsList[selectedItem.toInt() - 1])
+                                        println("Product added successfully to the cart\n")
+                                    } else
+                                        println("Unable to add the product\nPlease select a valid option")
+                                }
+                            }
+                            2.toByte() -> {
+                                if(displayCurrentCart()) {
+                                    var deleteOption: Byte
+                                    println("Please introduce the element number you wish to delete")
+                                    try {
+                                        deleteOption = readLine()!!.toByte()
+                                        deleteItemsFromCart(deleteOption)
+                                    } catch (e: NumberFormatException) {
+                                        println("Option not valid, returning to previous menu\n")
+                                    }
+                                }
+                            }
+                            3.toByte() -> { break }
+                            else -> println("Option not valid, please select a valid option\n")
+                        }
+                    } while (selectedItem != 3.toByte())
                 }
                 3.toByte() -> {
                     //Checkout path
