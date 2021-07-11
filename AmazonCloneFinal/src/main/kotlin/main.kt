@@ -1,8 +1,5 @@
-import javafx.application.Application.launch
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import models.Card
 import models.Cart
 import models.Product
@@ -33,14 +30,12 @@ import java.util.*
 //TODO: Optimize isLogged property usage
 //TODO: Implement functions for general use business logic (repetitive ones)
 //TODO: Optimize code
-//TODO: Check postworks and challenges to see what else to add our code
 //TODO: Protect strings if user enters a number instead
-//TODO: Make islogged the name of the Boolean variable in user to follow the standard convention
 //TODO: Check to see what happens if user types another invalid option in any input read
-//TODO: Make input text lowecase if needed
-//TODO: Add test products for buying (2-3 per category)
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
+//TODO: Validate that if user enters food, then they can't assign a pre-owned or owned category
+//TODO: Random number to make path choices (card accepted or denied, etc) on coroutines
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -62,14 +57,23 @@ var currentUser: Byte = 0
 //3.- For uploading a product
 var productName: String = ""
 var productCategory: String = ""
-var validCategories = setOf("clothes", "technology", "home", "food", "health")
+var validCategories = setOf("Clothes", "Technology", "Home", "Food", "Health")
 var productStatus: String = ""
-var validStatus = setOf("new", "pre-owned", "owned")
+var validStatus = setOf("New", "Pre-owned", "Owned")
 var productDescription: String = ""
 var productPrice: Float = 0f
 var productAddedCorrectly: Boolean = false
 //Consider substituting for an object. Simplifying implementation for now
-var registeredProductsList = arrayListOf<Product>()
+var registeredProductsList = arrayListOf(Product("Red T-Shirt", "Clothes", "New", "Basic t-shirts are not all the same. Some are scraped, transparent, prone to stretching out of shape. The 40-grit tee gives you a basic price, with a good solid shirt for your money. 100% cotton jersey is soft and comfortable", 14.95f),
+                                         Product("Asus TUF Gaming Laptop", "Technology", "Owned", "Asus TUF Gaming Laptop, 15.6\" 120Hz FHD IPS, AMD Ryzen 5-3550H, GeForce RTX 2060, 16GB DDR4, 512GB PCIe SSD, Gigabit Wi-Fi 5, Windows 10 Home, FX505DV-EH54", 1644.5f),
+                                         Product("Dynasty Gray Linen Bench Daybed", "Home", "Pre-owned", "Excellent accessory for anywhere in your home. Measurements: Length 130cm, Height 55cm, Width 50cm. Compartment to store things. Easy to clean. Super practical", 199.95f),
+                                         Product("Classic Nescafe Coffee", "Food", "New", "Soluble Coffee, 225 g. Pour a 2g teaspoon into your favorite mug and add 150ml of hot water. Mix well and go!", 3.98f),
+                                         Product("Adeorgyl Efe", "Health", "New", "Vitamin C Effervescent Tablets. Pack with 10 Tablets", 5.17f),
+                                         Product("Adidas VL COURT 2.0 K Sneakers", "Clothes", "Owned", "Synthetic leather upper. Textile inner lining. Padded collar that provides greater comfort and protection. Textile interior insole. Synthetic rubber midsole for long-term comfort", 54.95f),
+                                         Product("New Echo Dot (4th Gen)", "Technology", "New", "This sleek, compact design delivers crisp vocals and balanced lows, for full sound. Voice control your entertainment. Ready to help. Control your Smart Home. Connect with others. Designed to protect your privacy", 64.95f),
+                                         Product("Juice extractor", "Home", "Pre-owned", "T-fal Juice Extractor ZE3708MX Frutelia Plus, Healthy games freshly made daily effortlessly, Compact and functional design, Black color", 44.83f),
+                                         Product("Vegetable oil 1-2-3", "Food", "New", "Canola and / or sunflower oil, 0.007% TBHQ antioxidant. It does not contain cholesterol. Delicious taste. It has vitamins A, D, e and K", 1.92f),
+                                         Product("Petal Rendimax Toilet Pape", "Health", "New", "Petal Rendimax Toilet Paper with Aloe and Vitamin E, White, 12 Rolls of 320 Sheets", 4.26f))
 
 //4.- For buying a product
 var cart: Cart? = null
@@ -227,8 +231,8 @@ fun validateProduct(): Boolean {
     }
 
     fun validDescription(): Boolean {
-        return if (productDescription.length > 200){
-            println("Product description should be less than 200 words")
+        return if (productDescription.length > 250){
+            println("Product description should be less than 250 words")
             false
         }
         else
@@ -281,6 +285,7 @@ fun displayRegisteredItems(): Boolean {
         displayCurrentCart()
         println("Please select the item number you would like to buy: ")
         println("    Product name - Category - Status - Description - Price")
+        registeredProductsList.sortBy { it.getName() }
         registeredProductsList.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
         true
     }
@@ -361,12 +366,12 @@ fun validateCardInformation(): Boolean {
         //Using Java code in Kotlin
 
         //Set preferred date format
-        val dateFormat: SimpleDateFormat = SimpleDateFormat("MM/yy")
+        val dateFormat = SimpleDateFormat("MM/yy")
         dateFormat.isLenient = false
         //Create Date object
         //Parse the string into date
         try {
-            val javaDate: Date = dateFormat.parse(cardDate)
+            dateFormat.parse(cardDate)
         } catch (e: ParseException) { //Date format is invalid
             println("$cardDate is no a valid date format. Please use mm/yy")
             return false
@@ -406,10 +411,19 @@ suspend fun fetchInformation(message: String, speed: Long) {
         }
 }
 
+//Function to capitalize first letter of each word
+fun String.capitalizeWords(): String =
+    split(" ").joinToString(" ") { it.lowercase(Locale.getDefault())
+        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+
+//Function to capitalize only the first letter of the first word
+fun String.capitalizeFirstLetter(): String =
+    replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
 fun main() {
-    //For testing purposes
+    //For testing purposes: user account
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
-    registeredProductsList.add(Product("test product", "home", "new", "testing description length", 12f))
+
     var firstOption: Byte = 1
     //Do while to keep the user iterating over the menu options till he decides to leave
     do {
@@ -418,6 +432,7 @@ fun main() {
             //Show welcome menu
             println("\nWelcome to <name in progress>!")
             println("Get your products within a week!!")
+            println("All prices are in USD")
             println("What do you want to do?")
             println("1.- Login")
             println("2.- Register")
@@ -481,7 +496,7 @@ fun main() {
                         registrationUsername = readLine()?:""
                         println("Please enter an email")
                         //Check if the value read is null or not. If it is, then assign ""
-                        registrationEmail = readLine()?:""
+                        registrationEmail = readLine()?.lowercase()?:""
                         println("Follow this guidelines to create a password:")
                         println("At least one digit (0-9)")
                         println("At least one lower case letter (a-z)")
@@ -543,18 +558,18 @@ fun main() {
                         var secondOption: Byte = 3
                         println("Please enter the product name")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productName = readLine()?:""
+                        productName = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product category")
-                        println("Available categories: clothes, technology, home, food or health")
+                        println("Available categories: Clothes, Technology, Home, Food or Health")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productCategory = readLine()?:""
+                        productCategory = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product status")
-                        println("Product status options: new, pre-owned or owned")
+                        println("Product status options: New, Pre-owned or Owned")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productStatus = readLine()?:""
+                        productStatus = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product description")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productDescription = readLine()?:""
+                        productDescription = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product price (in USD)")
                         var test: Boolean
                         do {
@@ -574,7 +589,7 @@ fun main() {
                         if (productAddedCorrectly){
                             //Add new product into the system
                             registeredProductsList.add(Product(productName, productCategory, productStatus, productDescription, productPrice))
-                            println("New product registered successfully!")
+                            println("New product registered successfully!\n")
                             break
                         } else {
                             if(!(productName == "" || productCategory == "" || productStatus == "" || productDescription == "")) {
@@ -679,15 +694,15 @@ fun main() {
                             if (registeredUsersList[currentUser.toInt()].firstName == "") {
                                 do {
                                     println("Please introduce your first name")
-                                    firstName = readLine()?:""
+                                    firstName = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your last name")
-                                    lastName = readLine()?:""
+                                    lastName = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your address")
-                                    addressLine = readLine()?:""
+                                    addressLine = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your city")
-                                    city = readLine()?:""
+                                    city = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your state")
-                                    state = readLine()?:""
+                                    state = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your zip code")
                                     var test: Boolean
                                     do {
@@ -700,7 +715,7 @@ fun main() {
                                         }
                                     } while (!test)
                                     println("Please introduce your country")
-                                    country = readLine()?:""
+                                    country = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your phone number")
                                     var test2: Boolean
                                     do {
@@ -747,7 +762,7 @@ fun main() {
                                 do {
                                     println("Please introduce your credit card information")
                                     println("Please introduce the cardholder name")
-                                    cardName = readLine()?:""
+                                    cardName = readLine()?.capitalizeWords()?:""
                                     println("Please introduce the card 16 digits")
                                     var testCard: Boolean
                                     do {
@@ -760,7 +775,6 @@ fun main() {
                                             testCard = false
                                         }
                                     } while (!testCard)
-                                    //TODO: Validate date format
                                     println("Please introduce the card expiration date (mm/yy)")
                                     cardDate = readLine()?:""
                                     println("Please introduce your card CVC")
@@ -806,7 +820,7 @@ fun main() {
                                 println("Initiating payment...")
                                 //Simulate server request using coroutines
                                 runBlocking { fetchInformation("Performing transaction", 800) }
-                                //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
+                                //Assuming payment will be successful.
                                 println("Payment successful!")
                                 generateShippingInformation()
                             }
