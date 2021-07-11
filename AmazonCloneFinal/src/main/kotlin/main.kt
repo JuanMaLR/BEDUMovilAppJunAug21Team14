@@ -36,7 +36,6 @@ import java.util.*
 //TODO: Check postworks and challenges to see what else to add our code
 //TODO: Protect strings if user enters a number instead
 //TODO: Check to see what happens if user types another invalid option in any input read
-//TODO: Make input text lowecase if needed
 //TODO: Add test products for buying (2-3 per category)
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
@@ -61,9 +60,9 @@ var currentUser: Byte = 0
 //3.- For uploading a product
 var productName: String = ""
 var productCategory: String = ""
-var validCategories = setOf("clothes", "technology", "home", "food", "health")
+var validCategories = setOf("Clothes", "Technology", "Home", "Food", "Health")
 var productStatus: String = ""
-var validStatus = setOf("new", "pre-owned", "owned")
+var validStatus = setOf("New", "Pre-owned", "Owned")
 var productDescription: String = ""
 var productPrice: Float = 0f
 var productAddedCorrectly: Boolean = false
@@ -405,6 +404,15 @@ suspend fun fetchInformation(message: String, speed: Long) {
         }
 }
 
+//Function to capitalize first letter of each word
+fun String.capitalizeWords(): String =
+    split(" ").joinToString(" ") { it.lowercase(Locale.getDefault())
+        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+
+//Function to capitalize only the first letter of the first word
+fun String.capitalizeFirstLetter(): String =
+    replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
 fun main() {
     //For testing purposes
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
@@ -480,7 +488,7 @@ fun main() {
                         registrationUsername = readLine()?:""
                         println("Please enter an email")
                         //Check if the value read is null or not. If it is, then assign ""
-                        registrationEmail = readLine()?:""
+                        registrationEmail = readLine()?.lowercase()?:""
                         println("Follow this guidelines to create a password:")
                         println("At least one digit (0-9)")
                         println("At least one lower case letter (a-z)")
@@ -542,18 +550,18 @@ fun main() {
                         var secondOption: Byte = 3
                         println("Please enter the product name")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productName = readLine()?:""
+                        productName = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product category")
-                        println("Available categories: clothes, technology, home, food or health")
+                        println("Available categories: Clothes, Technology, Home, Food or Health")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productCategory = readLine()?:""
+                        productCategory = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product status")
-                        println("Product status options: new, pre-owned or owned")
+                        println("Product status options: New, Pre-owned or Owned")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productStatus = readLine()?:""
+                        productStatus = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product description")
                         //Check if the value read is null or not. If it is, then assign ""
-                        productDescription = readLine()?:""
+                        productDescription = readLine()?.capitalizeFirstLetter() ?:""
                         println("Please enter the product price (in USD)")
                         var test: Boolean
                         do {
@@ -573,7 +581,7 @@ fun main() {
                         if (productAddedCorrectly){
                             //Add new product into the system
                             registeredProductsList.add(Product(productName, productCategory, productStatus, productDescription, productPrice))
-                            println("New product registered successfully!")
+                            println("New product registered successfully!\n")
                             break
                         } else {
                             if(!(productName == "" || productCategory == "" || productStatus == "" || productDescription == "")) {
@@ -678,15 +686,15 @@ fun main() {
                             if (registeredUsersList[currentUser.toInt()].firstName == "") {
                                 do {
                                     println("Please introduce your first name")
-                                    firstName = readLine()?:""
+                                    firstName = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your last name")
-                                    lastName = readLine()?:""
+                                    lastName = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your address")
-                                    addressLine = readLine()?:""
+                                    addressLine = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your city")
-                                    city = readLine()?:""
+                                    city = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your state")
-                                    state = readLine()?:""
+                                    state = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your zip code")
                                     var test: Boolean
                                     do {
@@ -699,7 +707,7 @@ fun main() {
                                         }
                                     } while (!test)
                                     println("Please introduce your country")
-                                    country = readLine()?:""
+                                    country = readLine()?.capitalizeFirstLetter() ?:""
                                     println("Please introduce your phone number")
                                     var test2: Boolean
                                     do {
@@ -746,7 +754,7 @@ fun main() {
                                 do {
                                     println("Please introduce your credit card information")
                                     println("Please introduce the cardholder name")
-                                    cardName = readLine()?:""
+                                    cardName = readLine()?.capitalizeWords()?:""
                                     println("Please introduce the card 16 digits")
                                     var testCard: Boolean
                                     do {
