@@ -35,7 +35,6 @@ import java.util.*
 //TODO: Optimize code
 //TODO: Check postworks and challenges to see what else to add our code
 //TODO: Protect strings if user enters a number instead
-//TODO: Make islogged the name of the Boolean variable in user to follow the standard convention
 //TODO: Check to see what happens if user types another invalid option in any input read
 //TODO: Make input text lowecase if needed
 //TODO: Add test products for buying (2-3 per category)
@@ -361,12 +360,12 @@ fun validateCardInformation(): Boolean {
         //Using Java code in Kotlin
 
         //Set preferred date format
-        val dateFormat: SimpleDateFormat = SimpleDateFormat("MM/yy")
+        val dateFormat = SimpleDateFormat("MM/yy")
         dateFormat.isLenient = false
         //Create Date object
         //Parse the string into date
         try {
-            val javaDate: Date = dateFormat.parse(cardDate)
+            dateFormat.parse(cardDate)
         } catch (e: ParseException) { //Date format is invalid
             println("$cardDate is no a valid date format. Please use mm/yy")
             return false
