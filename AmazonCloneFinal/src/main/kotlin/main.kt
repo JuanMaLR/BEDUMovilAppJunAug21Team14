@@ -27,15 +27,14 @@ import java.util.*
 
 //If code fails to compile because Redeclaration error, use: ./gradlew clean
 
-//TODO: Optimize isLogged property usage
-//TODO: Implement functions for general use business logic (repetitive ones)
-//TODO: Optimize code
-//TODO: Protect strings if user enters a number instead
-//TODO: Check to see what happens if user types another invalid option in any input read
+//TODO extra implementations:
+//TODO: Optimize code: Implement functions for general use business logic (repetitive ones) and Optimize isLogged property usage
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
 //TODO: Validate that if user enters food, then they can't assign a pre-owned or owned category
 //TODO: Random number to make path choices (card accepted or denied, etc) on coroutines
+//TODO: If user information already exists when making a payment give the user the option to edit it (personal or payment)
+//TODO: Ask the user to enter his billing address information if required (diff address than the one included)
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -413,8 +412,8 @@ suspend fun fetchInformation(message: String, speed: Long) {
 
 //Function to capitalize first letter of each word
 fun String.capitalizeWords(): String =
-    split(" ").joinToString(" ") { it.lowercase(Locale.getDefault())
-        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+    split(" ").joinToString(" ") { it ->
+        it.lowercase(Locale.getDefault()).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
 
 //Function to capitalize only the first letter of the first word
 fun String.capitalizeFirstLetter(): String =
@@ -689,7 +688,6 @@ fun main() {
                         } while (!(election == 1.toByte() || election == 2.toByte()))
                         //Prompt the user for additional information to be able to ship the order
                         if(election == 1.toByte()){
-                            //TODO: If user information already exists give the user the option to edit it (personal or payment)
                             //Check if the user information is already added
                             if (registeredUsersList[currentUser.toInt()].firstName == "") {
                                 do {
@@ -789,7 +787,6 @@ fun main() {
                                             testCardCVC = false
                                         }
                                     } while (!testCardCVC)
-                                    //TODO: Ask the user to enter his billing address information
 
                                     //If everything is ok, move on
                                     if (validateCardInformation()){
