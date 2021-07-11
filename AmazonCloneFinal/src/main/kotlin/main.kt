@@ -30,12 +30,12 @@ import java.util.*
 //TODO: Optimize isLogged property usage
 //TODO: Implement functions for general use business logic (repetitive ones)
 //TODO: Optimize code
-//TODO: Check postworks and challenges to see what else to add our code
 //TODO: Protect strings if user enters a number instead
 //TODO: Check to see what happens if user types another invalid option in any input read
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
 //TODO: Validate that if user enters food, then they can't assign a pre-owned or owned category
+//TODO: Random number to make path choices (card accepted or denied, etc) on coroutines
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -775,7 +775,6 @@ fun main() {
                                             testCard = false
                                         }
                                     } while (!testCard)
-                                    //TODO: Validate date format
                                     println("Please introduce the card expiration date (mm/yy)")
                                     cardDate = readLine()?:""
                                     println("Please introduce your card CVC")
@@ -821,7 +820,7 @@ fun main() {
                                 println("Initiating payment...")
                                 //Simulate server request using coroutines
                                 runBlocking { fetchInformation("Performing transaction", 800) }
-                                //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
+                                //Assuming payment will be successful.
                                 println("Payment successful!")
                                 generateShippingInformation()
                             }
