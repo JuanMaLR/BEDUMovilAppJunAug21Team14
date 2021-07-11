@@ -1,8 +1,5 @@
-import javafx.application.Application.launch
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import models.Card
 import models.Cart
 import models.Product
@@ -36,9 +33,10 @@ import java.util.*
 //TODO: Check postworks and challenges to see what else to add our code
 //TODO: Protect strings if user enters a number instead
 //TODO: Check to see what happens if user types another invalid option in any input read
-//TODO: Add test products for buying (2-3 per category)
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
+//TODO: Order products list by alphabet and category
+//TODO: Validate that if user enters food, then they can't assign a pre-owned or owned category
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -67,7 +65,16 @@ var productDescription: String = ""
 var productPrice: Float = 0f
 var productAddedCorrectly: Boolean = false
 //Consider substituting for an object. Simplifying implementation for now
-var registeredProductsList = arrayListOf<Product>()
+var registeredProductsList = arrayListOf(Product("Red T-Shirt", "Clothes", "New", "Basic t-shirts are not all the same. Some are scraped, transparent, prone to stretching out of shape. The 40-grit tee gives you a basic price, with a good solid shirt for your money. 100% cotton jersey is soft and comfortable", 14.95f),
+                                         Product("Asus TUF Gaming Laptop", "Technology", "Owned", "Asus TUF Gaming Laptop, 15.6\" 120Hz FHD IPS, AMD Ryzen 5-3550H, GeForce RTX 2060, 16GB DDR4, 512GB PCIe SSD, Gigabit Wi-Fi 5, Windows 10 Home, FX505DV-EH54", 1644.5f),
+                                         Product("Dynasty Gray Linen Bench Daybed", "Home", "Pre-owned", "Excellent accessory for anywhere in your home. Measurements: Length 130cm, Height 55cm, Width 50cm. Compartment to store things. Easy to clean. Super practical", 199.95f),
+                                         Product("Classic Nescafe Coffee", "Food", "New", "Soluble Coffee, 225 g. Pour a 2g teaspoon into your favorite mug and add 150ml of hot water. Mix well and go!", 3.98f),
+                                         Product("Adeorgyl Efe", "Health", "New", "Vitamin C Effervescent Tablets. Pack with 10 Tablets", 5.17f),
+                                         Product("Adidas VL COURT 2.0 K Sneakers", "Clothes", "Owned", "Synthetic leather upper. Textile inner lining. Padded collar that provides greater comfort and protection. Textile interior insole. Synthetic rubber midsole for long-term comfort", 54.95f),
+                                         Product("New Echo Dot (4th Gen)", "Technology", "New", "This sleek, compact design delivers crisp vocals and balanced lows, for full sound. Voice control your entertainment. Ready to help. Control your Smart Home. Connect with others. Designed to protect your privacy", 64.95f),
+                                         Product("Juice extractor", "Home", "Pre-owned", "T-fal Juice Extractor ZE3708MX Frutelia Plus, Healthy games freshly made daily effortlessly, Compact and functional design, Black color", 44.83f),
+                                         Product("Vegetable oil 1-2-3", "Food", "New", "Canola and / or sunflower oil, 0.007% TBHQ antioxidant. It does not contain cholesterol. Delicious taste. It has vitamins A, D, e and K", 1.92f),
+                                         Product("Petal Rendimax Toilet Pape", "Health", "New", "Petal Rendimax Toilet Paper with Aloe and Vitamin E, White, 12 Rolls of 320 Sheets", 4.26f))
 
 //4.- For buying a product
 var cart: Cart? = null
@@ -225,8 +232,8 @@ fun validateProduct(): Boolean {
     }
 
     fun validDescription(): Boolean {
-        return if (productDescription.length > 200){
-            println("Product description should be less than 200 words")
+        return if (productDescription.length > 250){
+            println("Product description should be less than 250 words")
             false
         }
         else
@@ -414,9 +421,9 @@ fun String.capitalizeFirstLetter(): String =
     replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
 fun main() {
-    //For testing purposes
+    //For testing purposes: user account
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
-    registeredProductsList.add(Product("test product", "home", "new", "testing description length", 12f))
+
     var firstOption: Byte = 1
     //Do while to keep the user iterating over the menu options till he decides to leave
     do {
@@ -425,6 +432,7 @@ fun main() {
             //Show welcome menu
             println("\nWelcome to <name in progress>!")
             println("Get your products within a week!!")
+            println("All prices are in USD")
             println("What do you want to do?")
             println("1.- Login")
             println("2.- Register")
