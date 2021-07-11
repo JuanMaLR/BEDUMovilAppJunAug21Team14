@@ -35,7 +35,6 @@ import java.util.*
 //TODO: Check to see what happens if user types another invalid option in any input read
 //TODO: Allow the user to track their current orders being shipped
 //TODO: Implement cart for multiuser application (like user login)
-//TODO: Order products list by alphabet and category
 //TODO: Validate that if user enters food, then they can't assign a pre-owned or owned category
 
 //Variables to be used in our app:
@@ -286,6 +285,7 @@ fun displayRegisteredItems(): Boolean {
         displayCurrentCart()
         println("Please select the item number you would like to buy: ")
         println("    Product name - Category - Status - Description - Price")
+        registeredProductsList.sortBy { it.getName() }
         registeredProductsList.forEachIndexed { index, element -> println("${index + 1}.- ${element.productInformation()}") }
         true
     }
