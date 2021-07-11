@@ -1,8 +1,11 @@
+import models.Card
 import models.Cart
 import models.Product
 import models.User
 import java.lang.NumberFormatException
 import java.util.regex.Pattern
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /*Amazon Clone is an app that will mimic the main functions that Amazon handles:
 1.- Be able to register an user
@@ -23,6 +26,13 @@ import java.util.regex.Pattern
 //TODO: Implement functions for general use business logic (repetitive ones)
 //TODO: Optimize code
 //TODO: Check postworks and challenges to see what else to add our code
+//TODO: Protect strings if user enters a number instead
+//TODO: Make islogged the name of the Boolean variable in user to follow the standard convention
+//TODO: Check to see what happens if user types another invalid option in any input read
+//TODO: Make input text lowecase if needed
+//TODO: Add test products for buying (2-3 per category)
+//TODO: Allow the user to track their current orders being shipped
+//TODO: Implement cart for multiuser application (like user login)
 
 //Variables to be used in our app:
 //1.- For handling user registration
@@ -54,25 +64,22 @@ var productAddedCorrectly: Boolean = false
 var registeredProductsList = arrayListOf<Product>()
 
 //4.- For buying a product
+var cart: Cart? = null
 var productCart = mutableListOf<Product>()
-var totalPrice = 0F
 //Credit card details
 var cardNumber: Long = 0
 var cardName: String = ""
 var cardDate: String = ""
-var cardCVC: Byte = 0
+var cardCVC: Short = 0
 //Ship to information
 var firstName: String = ""
 var lastName: String = ""
 var addressLine: String = ""
 var city: String = ""
 var state: String = ""
-var zipCode: Short = 0
+var zipCode: Int = 0
 var country: String = ""
-var phoneNumber: Int = 0
-var shipDate: String = ""
-var trackingNumber: String = ""
-var orderStatus: String = ""
+var phoneNumber: Long = 0
 
 //Function to validate if user username and password are correct
 fun validCredentials() {
@@ -299,7 +306,48 @@ fun validateUserInformation(): Boolean {
     return notNullInput()
 }
 
-//TODO: Protect strings if user enters a number instead
+//To check the credit card length
+fun checkCardLength() {
+    val cardLength: String = cardNumber.toString()
+    if (cardLength.length != 16)
+        throw NumberFormatException()
+}
+
+//To check the credit card CVC length
+fun checkCardCVCLength() {
+    val cardCVCLength: String = cardCVC.toString()
+    if (cardCVCLength.length != 3)
+        throw NumberFormatException()
+}
+
+//Function to check if proper card information was introduced
+fun validateCardInformation(): Boolean {
+
+    fun notNullInput(): Boolean {
+        return if (cardName.isBlank()) {
+            println("Card name cannot be null. Please renter the information\n")
+            false
+        } else
+            true
+    }
+
+    return notNullInput()
+}
+
+//Function to hardcode the shipping information
+fun generateShippingInformation() {
+    //ShipDate
+    val currentDateTime = LocalDate.now()
+    currentDateTime.plusDays(7)
+    cart?.shipDate = currentDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yy"))
+    println("\nYou will receive your order at ${cart!!.shipDate}")
+
+    //Tracking number
+    cart?.trackingNumber = (0..100_000_000_000).random() 
+
+    //Order status
+    cart?.orderStatus = "Shipped"
+}
 
 fun main() {
     //For testing purposes
@@ -312,6 +360,7 @@ fun main() {
         if (!userLogged()){
             //Show welcome menu
             println("\nWelcome to <name in progress>!")
+            println("Get your products within a week")
             println("What do you want to do?")
             println("1.- Login")
             println("2.- Register")
@@ -483,7 +532,7 @@ fun main() {
                     //To know which item the user wants to buy
                     var selectedItem: Byte = 0
                     //To see what the user wants to do
-                    var selectedOption: Byte = 1
+                    var selectedOption: Byte
                     //To loop while the user wants to continue adding items to his/her cart
                     do {
                         //Display menu options
@@ -538,69 +587,157 @@ fun main() {
                         println("No products have been added to the cart yet. Please add a product first before proceeding to checkout.")
                     } else {
                         var secondOption: Byte
-                        //Prompt the user for additional information to be able to ship the order
+                        var election: Byte
+                        if (cart == null){
+                            //Display the total and ask the user if they want to proceed
+                            cart = Cart(productCart)
+                        }
+                        cart!!.calculateTotalPrice()
+                        println("The total of the order is ${cart!!.totalPrice}")
                         do {
-                            println("Please introduce your first name")
-                            firstName = readLine()?:""
-                            println("Please introduce your last name")
-                            lastName = readLine()?:""
-                            println("Please introduce your address")
-                            addressLine = readLine()?:""
-                            println("Please introduce your city")
-                            city = readLine()?:""
-                            println("Please introduce your state")
-                            state = readLine()?:""
-                            println("Please introduce your zip code")
-                            var test: Boolean
-                            do {
-                                try {
-                                    zipCode = readLine()!!.toShort()
-                                    test = true
-                                } catch (e: NumberFormatException){
-                                    println("Value invalid, please enter a valid zipCode")
-                                    test = false
-                                }
-                            } while (!test)
-                            println("Please introduce your country")
-                            country = readLine()?:""
-                            println("Please introduce your phone number")
-                            var test2: Boolean
-                            do {
-                                try {
-                                    phoneNumber = readLine()!!.toInt()
-                                    test2 = true
-                                } catch (e: NumberFormatException){
-                                    println("Value invalid, please enter a valid zipCode")
-                                    test2 = false
-                                }
-                            } while (!test2)
-
-                            //If everything is ok, move on
-                            if (validateUserInformation()){
-                                //Add user information
-                                registeredUsersList[currentUser.toInt()].firstName = firstName
-                                registeredUsersList[currentUser.toInt()].lastName = lastName
-                                registeredUsersList[currentUser.toInt()].addressLine = addressLine
-                                registeredUsersList[currentUser.toInt()].city = city
-                                registeredUsersList[currentUser.toInt()].state = state
-                                registeredUsersList[currentUser.toInt()].zipCode = zipCode
-                                registeredUsersList[currentUser.toInt()].country = country
-                                registeredUsersList[currentUser.toInt()].phoneNumber = phoneNumber
-                                println("User profile completed successfully!")
-                                break
-                            } else {
-                                println("1.- Try again")
-                                println("2.- Return to main menu")
-                                secondOption = try {
-                                    readLine()!!.toByte()
-                                } catch (e: NumberFormatException) {
-                                    println("Option not valid, returning to main menu")
-                                    2
-                                }
+                            println("Do you want to proceed?")
+                            println("1.- Yes")
+                            println("2.- Go back to previous menu")
+                            election = try {
+                                readLine()!!.toByte()
+                            } catch (e: NumberFormatException) {
+                                println("Option not valid, returning to previous menu")
+                                2
                             }
-                        } while (secondOption != 2.toByte())
+                            if (!(election == 1.toByte() || election == 2.toByte())) {
+                                println("Option not valid, please try again")
+                                election = 3
+                            }
+                        } while (!(election == 1.toByte() || election == 2.toByte()))
+                        //Prompt the user for additional information to be able to ship the order
+                        if(election == 1.toByte()){
+                            //TODO: If user information already exists give the user the option to edit it (personal or payment)
+                            //Check if the user information is already added
+                            if (registeredUsersList[currentUser.toInt()].firstName == "") {
+                                do {
+                                    println("Please introduce your first name")
+                                    firstName = readLine()?:""
+                                    println("Please introduce your last name")
+                                    lastName = readLine()?:""
+                                    println("Please introduce your address")
+                                    addressLine = readLine()?:""
+                                    println("Please introduce your city")
+                                    city = readLine()?:""
+                                    println("Please introduce your state")
+                                    state = readLine()?:""
+                                    println("Please introduce your zip code")
+                                    var test: Boolean
+                                    do {
+                                        try {
+                                            zipCode = readLine()!!.toInt()
+                                            test = true
+                                        } catch (e: NumberFormatException){
+                                            println("Value invalid, please enter a valid zipCode")
+                                            test = false
+                                        }
+                                    } while (!test)
+                                    println("Please introduce your country")
+                                    country = readLine()?:""
+                                    println("Please introduce your phone number")
+                                    var test2: Boolean
+                                    do {
+                                        try {
+                                            phoneNumber = readLine()!!.toLong()
+                                            test2 = true
+                                        } catch (e: NumberFormatException){
+                                            println("Value invalid, please enter a valid zipCode")
+                                            test2 = false
+                                        }
+                                    } while (!test2)
 
-                        //TODO: Prompt the user the total of the order and guide him into making the payment
+                                    //If everything is ok, move on
+                                    if (validateUserInformation()){
+                                        //Add user information
+                                        registeredUsersList[currentUser.toInt()].firstName = firstName
+                                        registeredUsersList[currentUser.toInt()].lastName = lastName
+                                        registeredUsersList[currentUser.toInt()].addressLine = addressLine
+                                        registeredUsersList[currentUser.toInt()].city = city
+                                        registeredUsersList[currentUser.toInt()].state = state
+                                        registeredUsersList[currentUser.toInt()].zipCode = zipCode
+                                        registeredUsersList[currentUser.toInt()].country = country
+                                        registeredUsersList[currentUser.toInt()].phoneNumber = phoneNumber
+                                        println("User profile completed successfully!\n")
+                                        break
+                                    } else {
+                                        println("1.- Try again")
+                                        println("2.- Return to main menu")
+                                        secondOption = try {
+                                            readLine()!!.toByte()
+                                        } catch (e: NumberFormatException) {
+                                            println("Option not valid, returning to main menu")
+                                            2
+                                        }
+                                    }
+                                } while (secondOption != 2.toByte())
+                            } else
+                                println("User profile is completed. Proceeding with payment information\n")
+
+                            //Now ask the user for his credit card information if no previous information exists
+                            if(registeredUsersList[currentUser.toInt()].card == null) {
+                                do {
+                                    println("Please introduce your credit card information")
+                                    println("Please introduce the cardholder name")
+                                    cardName = readLine()?:""
+                                    println("Please introduce the card 16 digits")
+                                    var testCard: Boolean
+                                    do {
+                                        try {
+                                            cardNumber = readLine()!!.toLong()
+                                            checkCardLength()
+                                            testCard = true
+                                        } catch (e: NumberFormatException){
+                                            println("Value invalid, please enter a valid card number (16 digits long)")
+                                            testCard = false
+                                        }
+                                    } while (!testCard)
+                                    //TODO: Validate date format
+                                    println("Please introduce the card expiration date (mm/yy)")
+                                    cardDate = readLine()?:""
+                                    println("Please introduce your card CVC")
+                                    var testCardCVC: Boolean
+                                    do {
+                                        try {
+                                            cardCVC = readLine()!!.toShort()
+                                            checkCardCVCLength()
+                                            testCardCVC = true
+                                        } catch (e: NumberFormatException){
+                                            println("Value invalid, please enter a valid card CVC (3 digits long)")
+                                            testCardCVC = false
+                                        }
+                                    } while (!testCardCVC)
+                                    //TODO: Ask the user to enter his billing information
+
+                                    //If everything is ok, move on
+                                    if (validateCardInformation()){
+                                        //Add card information into the current user
+                                        registeredUsersList[currentUser.toInt()].card = Card(cardNumber, cardName, cardDate, cardCVC)
+                                        println("Card added successfully to user profile!")
+                                        break
+                                    } else {
+                                        println("1.- Try again")
+                                        println("2.- Return to main menu")
+                                        secondOption = try {
+                                            readLine()!!.toByte()
+                                        } catch (e: NumberFormatException) {
+                                            println("Option not valid, returning to main menu")
+                                            2
+                                        }
+                                    }
+                                } while (secondOption != 2.toByte())
+                            } else
+                                println("Card information for current user exists in the system. Proceeding with payment\n")
+
+                            //Payment section
+                            //Async section
+                            //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
+                            println("Payment successful! ")
+                            generateShippingInformation()
+                        }
                     }
                 }
                 4.toByte() -> {
