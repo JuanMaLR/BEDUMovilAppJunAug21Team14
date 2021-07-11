@@ -355,12 +355,12 @@ fun generateShippingInformation() {
 }
 
 //Function to simulate data retrieval or server requests
-suspend fun fetchInformation() {
+suspend fun fetchInformation(message: String, speed: Long) {
         var percentage = 0
 
         while (percentage < 101){
-            println("Retrieving information $percentage%")
-            delay(500)
+            println("$message $percentage%")
+            delay(speed)
             percentage+=20
         }
 }
@@ -405,7 +405,7 @@ fun main() {
                             //Validate user input: if everything is ok, set session variable to true
                             validCredentials()
                             //Simulate server request using coroutines
-                            runBlocking { fetchInformation() }
+                            runBlocking { fetchInformation("Retrieving information", 500) }
                             //Surround with try-catch to prevent the user from accessing an inexistent element in the registered user's array
                             try {
                                 if (registeredUsersList.elementAt(currentUser.toInt()).isLogged()){
@@ -458,6 +458,8 @@ fun main() {
                         //If everything is ok, set session variable to true
                         if (validRegistration()){
                             //Add new user into the system
+                            //Simulate server request using coroutines
+                            runBlocking { fetchInformation("Registering user", 650) }
                             //Create new user Object and add it to the list of Users
                             //registeredUsers[registrationUsername] = registrationPassword
                             registeredUsersList.add(User(registrationUsername, registrationEmail, registrationPassword, true))
@@ -526,6 +528,8 @@ fun main() {
 
                         //If everything is ok, set productAddedCorrectly variable to true
                         productAddedCorrectly = validateProduct()
+                        //Simulate server request using coroutines
+                        runBlocking { fetchInformation("Adding product", 650) }
                         if (productAddedCorrectly){
                             //Add new product into the system
                             registeredProductsList.add(Product(productName, productCategory, productStatus, productDescription, productPrice))
@@ -670,6 +674,8 @@ fun main() {
 
                                     //If everything is ok, move on
                                     if (validateUserInformation()){
+                                        //Simulate server request using coroutines
+                                        runBlocking { fetchInformation("Updating user information", 350) }
                                         //Add user information
                                         registeredUsersList[currentUser.toInt()].firstName = firstName
                                         registeredUsersList[currentUser.toInt()].lastName = lastName
@@ -732,6 +738,8 @@ fun main() {
 
                                     //If everything is ok, move on
                                     if (validateCardInformation()){
+                                        //Simulate server request using coroutines
+                                        runBlocking { fetchInformation("Adding user card information", 350) }
                                         //Add card information into the current user
                                         registeredUsersList[currentUser.toInt()].card = Card(cardNumber, cardName, cardDate, cardCVC)
                                         println("Card added successfully to user profile!")
@@ -751,7 +759,9 @@ fun main() {
                                 println("Card information for current user exists in the system. Proceeding with payment\n")
 
                             //Payment section
-                            //Async section
+                            println("Initiating payment...")
+                            //Simulate server request using coroutines
+                            runBlocking { fetchInformation("Performing transaction", 800) }
                             //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
                             println("Payment successful! ")
                             generateShippingInformation()
