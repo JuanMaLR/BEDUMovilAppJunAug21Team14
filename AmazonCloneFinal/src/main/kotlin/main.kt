@@ -8,9 +8,12 @@ import models.Cart
 import models.Product
 import models.User
 import java.lang.NumberFormatException
+import java.text.ParseException
+import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 /*Amazon Clone is an app that will mimic the main functions that Amazon handles:
 1.- Be able to register an user
@@ -308,7 +311,25 @@ fun validateUserInformation(): Boolean {
             true
     }
 
-    return notNullInput()
+    fun validateZipCodeLength(): Boolean {
+        return if (zipCode.toString().length == 5)
+            true
+        else {
+            println("Zip code length incorrect. Please use 5 digits")
+            false
+        }
+    }
+
+    fun validatePhoneNumberLength(): Boolean {
+        return if (phoneNumber.toString().length == 10)
+            true
+        else {
+            println("Phone number length incorrect. Please use 10 digits and no special characters")
+            false
+        }
+    }
+
+    return notNullInput() && validateZipCodeLength() && validatePhoneNumberLength()
 }
 
 //To check the credit card length
@@ -336,22 +357,42 @@ fun validateCardInformation(): Boolean {
             true
     }
 
-    return notNullInput()
+    fun cardDateFormatValidation(): Boolean {
+        //Using Java code in Kotlin
+
+        //Set preferred date format
+        val dateFormat: SimpleDateFormat = SimpleDateFormat("MM/yy")
+        dateFormat.isLenient = false
+        //Create Date object
+        //Parse the string into date
+        try {
+            val javaDate: Date = dateFormat.parse(cardDate)
+        } catch (e: ParseException) { //Date format is invalid
+            println("$cardDate is no a valid date format. Please use mm/yy")
+            return false
+        }
+        //Return true if date format is valid
+        return true
+    }
+
+    return notNullInput() && cardDateFormatValidation()
 }
 
 //Function to hardcode the shipping information
 fun generateShippingInformation() {
     //ShipDate
+    //Using Java Libraries
     val currentDateTime = LocalDate.now()
-    currentDateTime.plusDays(7)
-    cart?.shipDate = currentDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yy"))
+    cart?.shipDate = currentDateTime.plusDays(7).format(DateTimeFormatter.ofPattern("dd-MM-yy"))
     println("\nYou will receive your order at ${cart!!.shipDate}")
 
     //Tracking number
-    cart?.trackingNumber = (0..100_000_000_000).random() 
+    cart?.trackingNumber = (0..100_000_000_000).random()
+    println("Your tracking number is ${cart!!.trackingNumber}")
 
     //Order status
     cart?.orderStatus = "Shipped"
+    println("Your order status is ${cart!!.orderStatus}")
 }
 
 //Function to simulate data retrieval or server requests
@@ -608,7 +649,7 @@ fun main() {
                     if(productCart.isEmpty()){
                         println("No products have been added to the cart yet. Please add a product first before proceeding to checkout.")
                     } else {
-                        var secondOption: Byte
+                        var secondOption: Byte = 1
                         var election: Byte
                         if (cart == null){
                             //Display the total and ask the user if they want to proceed
@@ -702,7 +743,7 @@ fun main() {
                                 println("User profile is completed. Proceeding with payment information\n")
 
                             //Now ask the user for his credit card information if no previous information exists
-                            if(registeredUsersList[currentUser.toInt()].card == null) {
+                            if(registeredUsersList[currentUser.toInt()].card == null && secondOption != 2.toByte()) {
                                 do {
                                     println("Please introduce your credit card information")
                                     println("Please introduce the cardholder name")
@@ -734,7 +775,7 @@ fun main() {
                                             testCardCVC = false
                                         }
                                     } while (!testCardCVC)
-                                    //TODO: Ask the user to enter his billing information
+                                    //TODO: Ask the user to enter his billing address information
 
                                     //If everything is ok, move on
                                     if (validateCardInformation()){
@@ -742,7 +783,7 @@ fun main() {
                                         runBlocking { fetchInformation("Adding user card information", 350) }
                                         //Add card information into the current user
                                         registeredUsersList[currentUser.toInt()].card = Card(cardNumber, cardName, cardDate, cardCVC)
-                                        println("Card added successfully to user profile!")
+                                        println("Card added successfully to user profile!\n")
                                         break
                                     } else {
                                         println("1.- Try again")
@@ -755,16 +796,20 @@ fun main() {
                                         }
                                     }
                                 } while (secondOption != 2.toByte())
-                            } else
-                                println("Card information for current user exists in the system. Proceeding with payment\n")
+                            } else {
+                                if (secondOption == 1.toByte())
+                                    println("Card information for current user exists in the system. Proceeding with payment\n")
+                            }
 
-                            //Payment section
-                            println("Initiating payment...")
-                            //Simulate server request using coroutines
-                            runBlocking { fetchInformation("Performing transaction", 800) }
-                            //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
-                            println("Payment successful! ")
-                            generateShippingInformation()
+                            if (secondOption != 2.toByte()) {
+                                //Payment section
+                                println("Initiating payment...")
+                                //Simulate server request using coroutines
+                                runBlocking { fetchInformation("Performing transaction", 800) }
+                                //Assuming payment will be successful. TODO: Random number to make path choices (card accepted or denied)
+                                println("Payment successful!")
+                                generateShippingInformation()
+                            }
                         }
                     }
                 }
