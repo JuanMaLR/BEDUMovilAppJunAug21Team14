@@ -155,9 +155,9 @@ fun validRegistration(): Boolean {
 
     fun isPasswordSafe(password: String): Boolean{
         return if (Pattern.compile("^" +
-                    //"(?=.*[0-9])" +         //at least 1 digit
-                    //"(?=.*[a-z])" +         //at least 1 lower case letter
-                    //"(?=.*[A-Z])" +         //at least 1 upper case letter
+                    "(?=.*[0-9])" +         //at least 1 digit
+                    "(?=.*[a-z])" +         //at least 1 lower case letter
+                    "(?=.*[A-Z])" +         //at least 1 upper case letter
                     "(?=.*[a-zA-Z])" +      //any letter
                     "(?=.*[@#$%^&+=])" +    //at least 1 special character
                     "(?=\\S+$)" +           //no white spaces
@@ -212,7 +212,7 @@ fun validateProduct(): Boolean {
     }
 
     fun validCategory(): Boolean {
-        return if (validCategories.contains(productCategory.lowercase()))
+        return if (validCategories.contains(productCategory))
             true
         else {
             println("Please enter a valid category")
@@ -221,7 +221,7 @@ fun validateProduct(): Boolean {
     }
 
     fun validStatus(): Boolean {
-        return if (validStatus.contains(productStatus.lowercase()))
+        return if (validStatus.contains(productStatus))
             true
         else {
             println("Please enter a valid status")
@@ -419,6 +419,14 @@ fun String.capitalizeWords(): String =
 fun String.capitalizeFirstLetter(): String =
     replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
+//Function to wipe out all the cart information after purchase
+fun removeInformation() {
+    //Delete the cart information
+    cart = null
+    //Delete the product list
+    productCart.clear()
+}
+
 fun main() {
     //For testing purposes: user account
     registeredUsersList.add(User("juanma", "juan@test.com", "Ju4nM4#45"))
@@ -429,7 +437,7 @@ fun main() {
         //Check to see if user has logged in
         if (!userLogged()){
             //Show welcome menu
-            println("\nWelcome to <name in progress>!")
+            println("\nWelcome to Nozama!")
             println("Get your products within a week!!")
             println("All prices are in USD")
             println("What do you want to do?")
@@ -457,10 +465,10 @@ fun main() {
                             println("Please enter your password")
                             //Check if the value read is null or not. If it is, then assign ""
                             password = readLine()?:""
-                            //Validate user input: if everything is ok, set session variable to true
-                            validCredentials()
                             //Simulate server request using coroutines
                             runBlocking { fetchInformation("Retrieving information", 500) }
+                            //Validate user input: if everything is ok, set session variable to true
+                            validCredentials()
                             //Surround with try-catch to prevent the user from accessing an inexistent element in the registered user's array
                             try {
                                 if (registeredUsersList.elementAt(currentUser.toInt()).isLogged()){
@@ -510,11 +518,11 @@ fun main() {
                         //Check if the value read is null or not. If it is, then assign ""
                         registrationPasswordConfirmation = readLine()?:""
 
+                        //Simulate server request using coroutines
+                        runBlocking { fetchInformation("Registering user", 650) }
                         //If everything is ok, set session variable to true
                         if (validRegistration()){
                             //Add new user into the system
-                            //Simulate server request using coroutines
-                            runBlocking { fetchInformation("Registering user", 650) }
                             //Create new user Object and add it to the list of Users
                             //registeredUsers[registrationUsername] = registrationPassword
                             registeredUsersList.add(User(registrationUsername, registrationEmail, registrationPassword, true))
@@ -581,10 +589,10 @@ fun main() {
                             }
                         } while (!test)
 
-                        //If everything is ok, set productAddedCorrectly variable to true
-                        productAddedCorrectly = validateProduct()
                         //Simulate server request using coroutines
                         runBlocking { fetchInformation("Adding product", 650) }
+                        //If everything is ok, set productAddedCorrectly variable to true
+                        productAddedCorrectly = validateProduct()
                         if (productAddedCorrectly){
                             //Add new product into the system
                             registeredProductsList.add(Product(productName, productCategory, productStatus, productDescription, productPrice))
@@ -670,7 +678,7 @@ fun main() {
                             cart = Cart(productCart)
                         }
                         cart!!.calculateTotalPrice()
-                        println("The total of the order is ${cart!!.totalPrice}")
+                        println("The total of the order is $${cart!!.totalPrice}")
                         do {
                             println("Do you want to proceed?")
                             println("1.- Yes")
@@ -726,10 +734,10 @@ fun main() {
                                         }
                                     } while (!test2)
 
+                                    //Simulate server request using coroutines
+                                    runBlocking { fetchInformation("Updating user information", 350) }
                                     //If everything is ok, move on
                                     if (validateUserInformation()){
-                                        //Simulate server request using coroutines
-                                        runBlocking { fetchInformation("Updating user information", 350) }
                                         //Add user information
                                         registeredUsersList[currentUser.toInt()].firstName = firstName
                                         registeredUsersList[currentUser.toInt()].lastName = lastName
@@ -788,10 +796,10 @@ fun main() {
                                         }
                                     } while (!testCardCVC)
 
+                                    //Simulate server request using coroutines
+                                    runBlocking { fetchInformation("Adding user card information", 350) }
                                     //If everything is ok, move on
                                     if (validateCardInformation()){
-                                        //Simulate server request using coroutines
-                                        runBlocking { fetchInformation("Adding user card information", 350) }
                                         //Add card information into the current user
                                         registeredUsersList[currentUser.toInt()].card = Card(cardNumber, cardName, cardDate, cardCVC)
                                         println("Card added successfully to user profile!\n")
@@ -820,6 +828,7 @@ fun main() {
                                 //Assuming payment will be successful.
                                 println("Payment successful!")
                                 generateShippingInformation()
+                                removeInformation()
                             }
                         }
                     }
